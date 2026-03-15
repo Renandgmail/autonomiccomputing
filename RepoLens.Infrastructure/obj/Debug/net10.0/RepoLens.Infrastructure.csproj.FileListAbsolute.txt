@@ -1,0 +1,15 @@
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.Infrastructure.csproj.AssemblyReference.cache
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.Infrastructure.AssemblyInfoInputs.cache
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.Infrastructure.AssemblyInfo.cs
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.Infrastructure.csproj.CoreCompileInputs.cache
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\bin\Debug\net10.0\RepoLens.Infrastructure.deps.json
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\bin\Debug\net10.0\RepoLens.Infrastructure.dll
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\bin\Debug\net10.0\RepoLens.Infrastructure.pdb
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\bin\Debug\net10.0\RepoLens.Core.dll
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\bin\Debug\net10.0\RepoLens.Core.pdb
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.10456879.Up2Date
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.Infrastructure.dll
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\refint\RepoLens.Infrastructure.dll
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\RepoLens.Infrastructure.pdb
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Infrastructure\obj\Debug\net10.0\ref\RepoLens.Infrastructure.dll

@@ -1,0 +1,11 @@
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\bin\Debug\net10.0\RepoLens.Core.deps.json
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\bin\Debug\net10.0\RepoLens.Core.dll
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\bin\Debug\net10.0\RepoLens.Core.pdb
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\RepoLens.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\RepoLens.Core.AssemblyInfoInputs.cache
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\RepoLens.Core.AssemblyInfo.cs
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\RepoLens.Core.csproj.CoreCompileInputs.cache
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\RepoLens.Core.dll
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\refint\RepoLens.Core.dll
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\RepoLens.Core.pdb
+D:\Project\AutonomicComputing\RepoLens\RepoLens.Core\obj\Debug\net10.0\ref\RepoLens.Core.dll
