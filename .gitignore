@@ -1,0 +1,59 @@
+# Build output directories
+bin/
+obj/
+
+# NuGet packages
+*.nuget/
+packages/
+
+# Visual Studio files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider
+.idea/
+*.iml
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Runtime files
+*.exe
+*.dll
+*.pdb
+*.dll.config
+*.exe.config
+
+# Test results
+TestResults/
+*.trx
+*.html
+
+# Coverage files
+*.coverage
+*.coveragexml
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Visual Studio cache/options
+*.VisualState.xml
+ApplicationInsights.config

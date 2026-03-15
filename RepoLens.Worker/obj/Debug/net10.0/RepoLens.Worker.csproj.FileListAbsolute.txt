@@ -1,5 +1,0 @@
-D:\Project\AutonomicComputing\RepoLens\RepoLens.Worker\obj\Debug\net10.0\RepoLens.Worker.csproj.AssemblyReference.cache
-D:\Project\AutonomicComputing\RepoLens\RepoLens.Worker\obj\Debug\net10.0\RepoLens.Worker.GeneratedMSBuildEditorConfig.editorconfig
-D:\Project\AutonomicComputing\RepoLens\RepoLens.Worker\obj\Debug\net10.0\RepoLens.Worker.AssemblyInfoInputs.cache
-D:\Project\AutonomicComputing\RepoLens\RepoLens.Worker\obj\Debug\net10.0\RepoLens.Worker.AssemblyInfo.cs
-D:\Project\AutonomicComputing\RepoLens\RepoLens.Worker\obj\Debug\net10.0\RepoLens.Worker.csproj.CoreCompileInputs.cache
