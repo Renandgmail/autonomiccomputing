@@ -197,7 +197,7 @@ Repository → Commit Walker → Artifact Extractor → Storage → Index
 ```json
 {
   "ConnectionStrings": {
-    "Postgres": "Host=localhost;Database=repolens;Username=postgres;Password=password"
+    "Postgres": "Host=localhost;Database=repolens;Username=postgres;Password=TCEP"
   },
   "Storage": {
     "Type": "Local",

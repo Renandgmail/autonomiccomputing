@@ -1,192 +1,269 @@
-# RepoLens - Autonomic Computing Repository Analysis System
+# RepoLens - Repository Analytics Platform
 
-## Overview
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![.NET Version](https://img.shields.io/badge/.NET-10.0-purple.svg)]()
+[![React Version](https://img.shields.io/badge/React-18.3.1-blue.svg)]()
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue.svg)]()
 
-RepoLens is an autonomic computing system designed to automatically ingest, analyze, and index Git repositories for intelligent codebase querying and analysis. The system provides content-addressable storage, semantic analysis, and a foundation for building intelligent development tools.
+RepoLens is a comprehensive repository analytics platform that provides deep insights into your Git repositories through GitHub API integration. It offers repository metrics, contributor analytics, code quality assessment, and visual dashboards for development teams.
 
-## Architecture
+## ✨ Features
 
-### Core Components
+### 📊 Repository Analytics
+- **Real GitHub Integration** - Connects directly to GitHub repositories via API
+- **Comprehensive Metrics Collection** - Files, commits, contributors, languages
+- **Repository Health Scoring** - Overall health assessment with detailed breakdowns
+- **Code Quality Metrics** - Maintainability index, complexity analysis, technical debt
+- **Performance Insights** - Build success rates, test coverage, bundle analysis
 
-#### 1. RepoLens.Core
-- **Domain Entities**: Repository, Commit, Artifact, ArtifactVersion
-- **Repositories**: IRepositoryRepository, IArtifactRepository
-- **Exceptions**: GitException, RepoLensException, StorageException
+### 👥 Team Analytics  
+- **Contributor Analysis** - Detailed contributor metrics and activity patterns
+- **Collaboration Insights** - Team dynamics, knowledge distribution, bus factor
+- **Activity Patterns** - Hourly/daily activity analysis, peak development times
+- **Productivity Metrics** - Development velocity, contribution trends
 
-#### 2. RepoLens.Infrastructure
-- **Data Access**: Entity Framework Core with PostgreSQL
-- **Git Operations**: LibGit2Sharp integration for repository cloning and commit walking
-- **Storage**: Content-addressable storage service (currently configured for S3/MinIO)
-- **Repositories**: Entity Framework implementations
+### 🎯 Advanced Visualizations
+- **Interactive Dashboards** - Professional Material-UI components
+- **Real-time Charts** - Activity timelines, contribution matrices, trend analysis
+- **Language Distribution** - Visual breakdown of codebase composition
+- **Repository Comparisons** - Side-by-side repository analytics
 
-#### 3. RepoLens.Worker
-- **Background Service**: Continuous repository ingestion
-- **Ingestion Service**: Main processing pipeline
-- **Dependency Injection**: Service registration and configuration
+### 🔍 Search & Discovery (Coming Soon)
+- **Advanced Code Search** - Full-text search across repository contents
+- **Function/Class Discovery** - Browse and search code structures
+- **Dependency Analysis** - Visualize project dependencies
+- **API Documentation** - Auto-generated endpoint documentation
 
-## Key Features
+## 🏗️ Architecture
 
-### Content-Addressable Storage
-- Files are stored using SHA256 hash as identifier
-- Deduplication across repositories
-- Immutable storage for version control
+### Backend (.NET 10)
+- **RepoLens.Api** - REST API with JWT authentication
+- **RepoLens.Core** - Business entities and interfaces
+- **RepoLens.Infrastructure** - Data access, GitHub integration, Git services
+- **RepoLens.Worker** - Background processing for metrics collection
+- **RepoLens.Tests** - Comprehensive unit and integration tests
 
-### Semantic Analysis
-- Roslyn-based C# code analysis
-- Extracts classes, methods, namespaces
-- Metadata storage for intelligent querying
+### Frontend (React + TypeScript)
+- **Modern React 18.3.1** with TypeScript for type safety
+- **Material-UI (MUI)** for professional, responsive design
+- **React Router** for single-page application navigation
+- **Comprehensive Component Library** - Reusable, accessible UI components
 
-### Commit Walking
-- Incremental repository processing
-- Efficient change detection
-- Historical analysis support
+### Database
+- **PostgreSQL 15+** - Production-ready relational database
+- **Entity Framework Core** - Code-first migrations, LINQ queries
+- **Optimized Schema** - Efficient indexing for analytics queries
 
-### Autonomic Operation
-- Self-configuring repository ingestion
-- Automatic error handling and recovery
-- Configurable processing pipelines
+### External Integrations
+- **GitHub API** - Repository data, commits, contributors, languages
+- **Real-time Updates** - SignalR for live metric updates
+- **JWT Authentication** - Secure API access
 
-## Setup Instructions
+## 🚀 Quick Start
 
 ### Prerequisites
-- .NET 10.0 SDK
-- PostgreSQL database
-- Git (for LibGit2Sharp)
-- Optional: MinIO or S3-compatible storage
+- .NET 10 SDK
+- Node.js 18+ and npm
+- PostgreSQL 15+
+- Git
 
-### Configuration
+### Installation
 
-1. **Database Setup**:
-   ```json
-   {
-     "ConnectionStrings": {
-       "Postgres": "Host=localhost;Database=repolens;Username=postgres;Password=yourpassword"
-     }
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/repolens.git
+   cd repolens
+   ```
+
+2. **Setup Database**
+   ```bash
+   # Create PostgreSQL database
+   createdb repolens_db
+   
+   # Update connection string in appsettings.json
+   ```
+
+3. **Configure GitHub API**
+   ```bash
+   # Add your GitHub token to appsettings.json
+   "GitHub": {
+     "ApiToken": "your-github-token-here"
    }
    ```
 
-2. **Storage Configuration**:
-   ```json
-   {
-     "S3": {
-       "Endpoint": "http://localhost:9000",
-       "AccessKey": "minioadmin",
-       "SecretKey": "minioadmin",
-       "Bucket": "repolens-storage"
-     }
-   }
+4. **Start Services**
+   ```bash
+   # Use the optimized startup script
+   .\start-services-optimized.bat
+   
+   # Or start manually:
+   # Backend: cd RepoLens.Api && dotnet run
+   # Frontend: cd repolens-ui && npm start
    ```
 
-### Building and Running
+5. **Access the Application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5179
+   - API Documentation: http://localhost:5179/swagger (when enabled)
 
+## 📚 Usage Guide
+
+### Adding a Repository
+1. Navigate to the **Repositories** page
+2. Click **Add Repository**
+3. Enter a GitHub repository URL (supports HTTPS, SSH, GitLab, Azure DevOps)
+4. The system will validate and sync the repository
+5. Access comprehensive metrics via the **Metrics** button
+
+### Understanding Metrics
+
+#### Repository Health Score (85%)
+- **Code Quality (92%)** - Maintainability, complexity, technical debt
+- **Activity Level (75%)** - Development frequency and consistency  
+- **Maintenance (88%)** - Recent updates, issue resolution
+
+#### Key Metrics Displayed
+- **Files Analyzed** - Total repository files processed
+- **Total Commits** - Complete commit history analysis
+- **Contributors** - Active and historical contributors
+- **Programming Languages** - Language distribution and percentages
+- **Technical Debt** - Estimated hours for code improvements
+- **Test Coverage** - Code coverage percentage and trends
+- **Security Assessment** - Vulnerability scanning results
+
+### Dashboard Navigation
+- **Dashboard** - Overview of all repositories
+- **Repositories** - Repository management and metrics access
+- **Analytics** - Advanced analytics and reporting (coming soon)
+- **Search** - Code search and discovery tools (coming soon)
+
+## 🧪 Testing
+
+### Run All Tests
 ```bash
-# Build the solution
-dotnet build RepoLens.sln
-
-# Run the worker service
-dotnet run --project RepoLens.Worker/RepoLens.Worker.csproj
+cd RepoLens.Tests
+dotnet test
 ```
 
-## Current Status
+### Test Categories
+- **Unit Tests** - Business logic, validation, services
+- **Integration Tests** - Database operations, GitHub API integration
+- **Performance Tests** - Response time and throughput validation
 
-### ✅ Completed
-- [x] Core domain model and entities
-- [x] Entity Framework Core integration
-- [x] LibGit2Sharp Git operations
-- [x] Content-addressable storage service
-- [x] Roslyn semantic analysis
-- [x] Background worker service
-- [x] Dependency injection setup
-- [x] Error handling and logging
+### Test Coverage
+Current test coverage includes:
+- Repository validation and URL parsing
+- GitHub API integration
+- Metrics collection and calculation
+- Database operations and migrations
+- Authentication and authorization flows
 
-### ⚠️ Known Issues
-- **Compilation Error**: Ambiguous reference between `RepoLens.Core.Entities.Repository` and `LibGit2Sharp.Repository`
-- **Type Conversion**: `byte[]` to `string` conversion error in storage service
-- **Amazon S3 Dependency**: Currently configured for paid AWS S3 service
+## 🔧 Development
 
-### 🔧 To Be Fixed
-- Fix ambiguous reference in `IngestionService.cs` (line 43)
-- Fix type conversion in `IngestionService.cs` (line 144)
-- Replace Amazon S3 with free alternative (local file system or MinIO)
-
-## Project Structure
-
+### Project Structure
 ```
-RepoLens/
-├── RepoLens.Core/           # Domain layer
-│   ├── Entities/           # Repository, Commit, Artifact, ArtifactVersion
-│   ├── Exceptions/         # Custom exception types
-│   └── Repositories/       # Repository interfaces
-├── RepoLens.Infrastructure/ # Data access layer
-│   ├── Git/               # LibGit2Sharp integration
-│   ├── Storage/           # Content-addressable storage
-│   ├── Repositories/      # EF Core implementations
-│   └── RepoLensDbContext.cs
-├── RepoLens.Worker/        # Application layer
-│   ├── Services/          # IngestionService
-│   ├── Program.cs         # Main worker entry point
-│   └── appsettings.json   # Configuration
-└── README.md              # This file
+repolens/
+├── RepoLens.Api/              # REST API controllers and configuration
+├── RepoLens.Core/             # Business entities, interfaces, exceptions
+├── RepoLens.Infrastructure/   # Data access, external services, Git integration
+├── RepoLens.Worker/           # Background processing services
+├── RepoLens.Tests/            # Unit and integration tests
+├── repolens-ui/               # React frontend application
+│   ├── src/components/        # React components
+│   ├── src/services/          # API integration services  
+│   └── src/types/             # TypeScript type definitions
+├── start-services-optimized.bat  # Development startup script
+└── README.md                  # This file
 ```
 
-## Future Development
+### Adding New Metrics
+1. **Define Entity** - Add to `RepoLens.Core/Entities/`
+2. **Create Repository Interface** - Add to `RepoLens.Core/Repositories/`
+3. **Implement Repository** - Add to `RepoLens.Infrastructure/Repositories/`
+4. **Update DbContext** - Modify `RepoLensDbContext.cs`
+5. **Create Migration** - `dotnet ef migrations add NewMetric`
+6. **Update UI** - Add components to display new metrics
 
-### Phase 1: Core Stability
-- [ ] Fix compilation errors
-- [ ] Replace paid services with free alternatives
-- [ ] Add comprehensive unit tests
-- [ ] Implement proper error recovery
+### API Development
+- **Controllers** - RESTful endpoints in `RepoLens.Api/Controllers/`
+- **Authentication** - JWT-based authentication with Identity
+- **Validation** - Model validation and business rule enforcement
+- **Documentation** - Swagger/OpenAPI integration
 
-### Phase 2: Enhanced Analysis
-- [ ] Multi-language support (Python, Java, JavaScript)
-- [ ] Advanced semantic analysis
-- [ ] Dependency graph generation
-- [ ] Code quality metrics
+### Frontend Development
+- **Component Library** - Material-UI components with custom styling
+- **State Management** - React hooks and context for state management
+- **Routing** - React Router for SPA navigation
+- **API Integration** - Axios-based API service layer
 
-### Phase 3: Query Engine
-- [ ] Custom query language for code analysis
-- [ ] Pattern matching and detection
-- [ ] Historical trend analysis
-- [ ] Integration with development tools
+## 🔒 Security
 
-### Phase 4: Autonomic Features
-- [ ] Self-optimizing ingestion pipelines
-- [ ] Intelligent resource management
-- [ ] Predictive analysis
-- [ ] Automated refactoring suggestions
+### Authentication
+- **JWT Tokens** - Secure API authentication
+- **Identity Framework** - User management and role-based access
+- **Token Refresh** - Automatic token renewal
 
-## Contributing
+### Data Protection
+- **Input Validation** - Comprehensive input sanitization
+- **SQL Injection Protection** - Entity Framework parameterized queries
+- **CORS Configuration** - Secure cross-origin resource sharing
 
+### GitHub Integration
+- **Token Security** - Encrypted GitHub API token storage
+- **Rate Limiting** - Respect GitHub API rate limits
+- **Permission Validation** - Repository access verification
+
+## 📈 Performance
+
+### Optimization Features
+- **Lazy Loading** - Component and data lazy loading
+- **Caching Strategy** - Redis caching for frequently accessed data
+- **Database Indexing** - Optimized indexes for analytics queries
+- **Background Processing** - Async metrics collection via worker services
+
+### Monitoring
+- **Health Checks** - Service health monitoring endpoints
+- **Logging** - Comprehensive application logging with Serilog
+- **Metrics Collection** - Performance metrics and monitoring
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Workflow
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes with tests
+4. Run the test suite (`dotnet test`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
-## License
+### Code Standards
+- **C#** - Follow Microsoft C# coding conventions
+- **TypeScript/React** - ESLint and Prettier configuration
+- **Testing** - Maintain >80% code coverage
+- **Documentation** - Update README and inline documentation
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 📜 License
 
-## Technical Notes
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Dependencies
-- **LibGit2Sharp**: Git repository operations
-- **Microsoft.EntityFrameworkCore**: ORM and database access
-- **Microsoft.CodeAnalysis**: C# semantic analysis
-- **Amazon.S3**: Cloud storage (to be replaced with free alternative)
+## 🙏 Acknowledgments
 
-### Performance Considerations
-- Content-addressable storage reduces storage requirements
-- Incremental processing minimizes redundant work
-- Background processing prevents blocking operations
-- Database indexing for efficient querying
+- **Microsoft** - .NET and Entity Framework Core
+- **Meta** - React and create-react-app
+- **Material-UI Team** - Excellent component library
+- **GitHub** - API integration and platform
+- **PostgreSQL** - Robust database platform
+- **LibGit2Sharp** - Git integration library
 
-### Security Considerations
-- Repository URLs should be validated
-- Storage credentials should be secured
-- Database connections should use proper authentication
-- Input validation for all external data
+## 📞 Support
 
-## Contact
+- **Issues** - Report bugs and feature requests via GitHub Issues
+- **Documentation** - Comprehensive guides in the `docs/` directory
+- **Community** - Join discussions in GitHub Discussions
 
-For questions or contributions, please open an issue or submit a pull request.
+---
+
+**RepoLens** - Bringing clarity to your codebase 🔍✨

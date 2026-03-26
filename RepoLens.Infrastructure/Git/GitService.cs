@@ -1,11 +1,12 @@
 using LibGit2Sharp;
 using RepoLens.Core.Entities;
 using RepoLens.Core.Exceptions;
+using RepoLens.Core.Services;
 using System.IO;
 
 namespace RepoLens.Infrastructure.Git;
 
-public class GitService
+public class GitService : IGitService
 {
     public async Task<LibGit2Sharp.Repository> OpenOrCloneRepositoryAsync(string repositoryUrl, string localPath, CancellationToken ct = default)
     {

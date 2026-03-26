@@ -142,7 +142,8 @@ public class IngestionService
 
         try
         {
-            var sourceText = Microsoft.CodeAnalysis.Text.SourceText.From(content);
+            var contentString = System.Text.Encoding.UTF8.GetString(content);
+            var sourceText = Microsoft.CodeAnalysis.Text.SourceText.From(contentString);
             var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(sourceText);
             
             var metadata = new

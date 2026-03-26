@@ -1,0 +1,197 @@
+{
+  "repositoryConfigurations": {
+    "small": {
+      "description": "Small test with 3 repositories",
+      "repositories": [
+        {
+          "owner": "microsoft",
+          "name": "vscode",
+          "description": "Visual Studio Code - Code Editor"
+        },
+        {
+          "owner": "facebook", 
+          "name": "react",
+          "description": "React JavaScript Library"
+        },
+        {
+          "owner": "vercel",
+          "name": "next.js", 
+          "description": "Next.js React Framework"
+        }
+      ]
+    },
+    "medium": {
+      "description": "Medium test with 5 repositories", 
+      "repositories": [
+        {
+          "owner": "microsoft",
+          "name": "vscode",
+          "description": "Visual Studio Code - Code Editor"
+        },
+        {
+          "owner": "facebook",
+          "name": "react", 
+          "description": "React JavaScript Library"
+        },
+        {
+          "owner": "vercel",
+          "name": "next.js",
+          "description": "Next.js React Framework"
+        },
+        {
+          "owner": "nodejs",
+          "name": "node",
+          "description": "Node.js JavaScript Runtime"
+        },
+        {
+          "owner": "angular",
+          "name": "angular",
+          "description": "Angular Web Framework"
+        }
+      ]
+    },
+    "large": {
+      "description": "Large test with 10 famous repositories",
+      "repositories": [
+        {
+          "owner": "microsoft",
+          "name": "vscode",
+          "description": "Visual Studio Code - Code Editor"
+        },
+        {
+          "owner": "facebook",
+          "name": "react",
+          "description": "React JavaScript Library"
+        },
+        {
+          "owner": "vercel",
+          "name": "next.js",
+          "description": "Next.js React Framework"
+        },
+        {
+          "owner": "nodejs",
+          "name": "node",
+          "description": "Node.js JavaScript Runtime"
+        },
+        {
+          "owner": "angular",
+          "name": "angular",
+          "description": "Angular Web Framework"
+        },
+        {
+          "owner": "vuejs",
+          "name": "vue",
+          "description": "Vue.js Progressive Framework"
+        },
+        {
+          "owner": "tensorflow",
+          "name": "tensorflow",
+          "description": "TensorFlow Machine Learning"
+        },
+        {
+          "owner": "kubernetes",
+          "name": "kubernetes",
+          "description": "Kubernetes Container Orchestration"
+        },
+        {
+          "owner": "docker",
+          "name": "compose",
+          "description": "Docker Compose Multi-container Tool"
+        },
+        {
+          "owner": "microsoft",
+          "name": "TypeScript",
+          "description": "TypeScript Language"
+        }
+      ]
+    },
+    "extra_large": {
+      "description": "Extra large test with 15 famous repositories",
+      "repositories": [
+        {
+          "owner": "microsoft",
+          "name": "vscode",
+          "description": "Visual Studio Code - Code Editor"
+        },
+        {
+          "owner": "facebook",
+          "name": "react",
+          "description": "React JavaScript Library"
+        },
+        {
+          "owner": "vercel",
+          "name": "next.js",
+          "description": "Next.js React Framework"
+        },
+        {
+          "owner": "nodejs",
+          "name": "node",
+          "description": "Node.js JavaScript Runtime"
+        },
+        {
+          "owner": "angular",
+          "name": "angular",
+          "description": "Angular Web Framework"
+        },
+        {
+          "owner": "vuejs",
+          "name": "vue",
+          "description": "Vue.js Progressive Framework"
+        },
+        {
+          "owner": "tensorflow",
+          "name": "tensorflow",
+          "description": "TensorFlow Machine Learning"
+        },
+        {
+          "owner": "kubernetes",
+          "name": "kubernetes",
+          "description": "Kubernetes Container Orchestration"
+        },
+        {
+          "owner": "docker",
+          "name": "compose",
+          "description": "Docker Compose Multi-container Tool"
+        },
+        {
+          "owner": "microsoft",
+          "name": "TypeScript",
+          "description": "TypeScript Language"
+        },
+        {
+          "owner": "golang",
+          "name": "go",
+          "description": "Go Programming Language"
+        },
+        {
+          "owner": "apache",
+          "name": "spark",
+          "description": "Apache Spark Analytics Engine"
+        },
+        {
+          "owner": "elastic",
+          "name": "elasticsearch",
+          "description": "Elasticsearch Search Engine"
+        },
+        {
+          "owner": "redis",
+          "name": "redis",
+          "description": "Redis In-Memory Database"
+        },
+        {
+          "owner": "nginx",
+          "name": "nginx",
+          "description": "Nginx Web Server"
+        }
+      ]
+    }
+  },
+  "defaultConfiguration": "large",
+  "testSettings": {
+    "delayBetweenRequests": 1000,
+    "enableMetricsCollection": true,
+    "enableAnalyticsApiTest": true,
+    "enableComprehensiveReport": true,
+    "verifyAllTables": true
+  }
+}

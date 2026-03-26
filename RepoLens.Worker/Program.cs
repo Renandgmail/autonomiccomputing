@@ -24,8 +24,6 @@ if (OperatingSystem.IsWindows())
 }
 
 builder.Logging.AddEventSourceLogger();
-builder.Logging.AddEventLog();
-builder.Logging.AddEventSourceLogger();
 builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
 // Configure services
@@ -35,7 +33,20 @@ builder.Services.AddDbContext<RepoLensDbContext>(options =>
 builder.Services.AddScoped<IRepositoryRepository, RepositoryRepository>();
 builder.Services.AddScoped<IArtifactRepository, ArtifactRepository>();
 builder.Services.AddSingleton<GitService>();
-builder.Services.AddSingleton<StorageService>();
+
+// Configure local storage service
+builder.Services.AddSingleton<StorageService>(serviceProvider =>
+{
+    var logger = serviceProvider.GetService<ILogger<StorageService>>();
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    
+    // Get storage path from configuration or use default
+    var storagePath = configuration.GetValue<string>("Storage:LocalPath") 
+        ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RepoLens", "storage");
+    
+    return new StorageService(storagePath, logger);
+});
+
 builder.Services.AddScoped<IngestionService>();
 
 builder.Services.AddHostedService<Worker>();
