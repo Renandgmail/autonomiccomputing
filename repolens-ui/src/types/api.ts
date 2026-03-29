@@ -1,4 +1,14 @@
 // API Types for RepoLens Backend Integration
+// Provider Type enum matching backend
+export enum ProviderType {
+  Unknown = 0,
+  GitHub = 1,
+  GitLab = 2,
+  Bitbucket = 3,
+  AzureDevOps = 4,
+  Local = 5
+}
+
 export interface Repository {
   id: number;
   name: string;
@@ -10,6 +20,8 @@ export interface Repository {
   lastSyncAt?: string;
   lastAnalysisAt?: string;
   status: RepositoryStatus;
+  providerType: ProviderType;  // Added provider type from backend
+  authTokenReference?: string; // Added auth token reference
   isPrivate: boolean;
   autoSync: boolean;
   syncIntervalMinutes: number;
@@ -18,17 +30,53 @@ export interface Repository {
   organizationName?: string;
   processingStatus: ProcessingStatus;
   
-  // Analytics properties
+  // Basic Analytics properties
   processedCommits?: number;
   processedFiles?: number;
   contributorCount?: number;
   sizeInBytes?: number;
   
-  // Metrics data properties
+  // Core Metrics data properties
   totalCommits?: number;
   totalFiles?: number;
   totalContributors?: number;
   languages?: string[];
+
+  // Enhanced Analytics Properties (matching backend RepositoryViewModel)
+  healthScore?: number;
+  codeQualityScore?: number;
+  activityLevelScore?: number;
+  maintenanceScore?: number;
+  
+  // Code Quality Metrics
+  maintainabilityIndex?: number;
+  cyclomaticComplexity?: number;
+  codeDuplication?: number;
+  technicalDebtHours?: number;
+  
+  // Performance Metrics
+  buildSuccessRate?: number;
+  testCoverage?: number;
+  
+  // Security Metrics
+  securityVulnerabilities?: number;
+  outdatedDependencies?: number;
+  
+  // Language and Activity Data
+  languageDistribution?: Record<string, number>;
+  activityPatterns?: Record<string, number>;
+  topContributors?: ContributorInfo[];
+  
+  // Team Analytics
+  busFactor?: number;
+  newContributors?: number;
+}
+
+// Supporting interfaces for Repository analytics
+export interface ContributorInfo {
+  name: string;
+  commits: number;
+  percentage: number;
 }
 
 export enum RepositoryStatus {

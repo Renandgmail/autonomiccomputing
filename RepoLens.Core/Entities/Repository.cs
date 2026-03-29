@@ -34,6 +34,12 @@ public class Repository
     public string? Username { get; set; }
     public DateTime? TokenExpiresAt { get; set; }
     
+    // Code Intelligence Extensions (Action Item #3)
+    public string? ScanStatus { get; set; } = "Pending";
+    public int TotalFiles { get; set; }
+    public int TotalLines { get; set; }
+    public string? ScanErrorMessage { get; set; }
+    
     // Navigation properties
     public virtual User? Owner { get; set; }
     public virtual Organization? Organization { get; set; }
@@ -41,6 +47,9 @@ public class Repository
     public virtual ICollection<RepositoryMetrics> Metrics { get; set; } = new List<RepositoryMetrics>();
     public virtual ICollection<ContributorMetrics> ContributorMetrics { get; set; } = new List<ContributorMetrics>();
     public virtual ICollection<FileMetrics> FileMetrics { get; set; } = new List<FileMetrics>();
+    
+    // Code Intelligence Navigation Properties
+    public virtual ICollection<RepositoryFile> RepositoryFiles { get; set; } = new List<RepositoryFile>();
 }
 
 public enum RepositoryType

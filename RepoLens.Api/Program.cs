@@ -19,8 +19,54 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 
 // Add API documentation
-// builder.Services.AddEndpointsApiExplorer(); // Temporarily disabled
-// builder.Services.AddSwaggerGen(); // Temporarily disabled due to compatibility issue
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
+    { 
+        Title = "RepoLens API", 
+        Version = "v1",
+        Description = "API for Repository Analytics and Metrics Collection",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "RepoLens Team",
+            Email = "support@repolens.com"
+        }
+    });
+
+    // Include XML comments for better API documentation
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+
+    // Add JWT Bearer token support in Swagger UI
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Configure Entity Framework with PostgreSQL for production
 builder.Services.AddDbContext<RepoLensDbContext>((serviceProvider, options) =>
@@ -134,6 +180,20 @@ builder.Services.AddSingleton<StorageService>(serviceProvider =>
 // Register validation services
 builder.Services.AddScoped<RepoLens.Api.Services.IRepositoryValidationService, RepoLens.Api.Services.RepositoryValidationService>();
 
+// Register Code Intelligence services (Action Item #3)
+builder.Services.AddScoped<IRepositoryAnalysisService, RepositoryAnalysisService>();
+builder.Services.AddScoped<IFileAnalysisService, FileAnalysisService>();
+
+// Register Natural Language Query services (Action Item #4)
+builder.Services.AddScoped<IQueryProcessingService, QueryProcessingService>();
+
+// Register Vocabulary Extraction services (Action Item #5)
+builder.Services.AddScoped<IVocabularyExtractionService, VocabularyExtractionService>();
+
+// Register Advanced Analytics services (Phase 7 - GAP-ANALYTICS)
+builder.Services.AddScoped<IFileMetricsService, FileMetricsService>();
+builder.Services.AddScoped<IContributorAnalyticsService, ContributorAnalyticsService>();
+
 // Register SignalR notification service
 builder.Services.AddScoped<RepoLens.Api.Hubs.IMetricsNotificationService, RepoLens.Api.Hubs.MetricsNotificationService>();
 
@@ -160,8 +220,14 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    // app.UseSwagger(); // Temporarily disabled
-    // app.UseSwaggerUI(); // Temporarily disabled
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "RepoLens API v1");
+        c.RoutePrefix = "swagger";
+        c.DocumentTitle = "RepoLens API Documentation";
+        c.DisplayRequestDuration();
+    });
 }
 
 app.UseHttpsRedirection();
@@ -199,3 +265,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+// Make Program class accessible for integration tests
+public partial class Program { }

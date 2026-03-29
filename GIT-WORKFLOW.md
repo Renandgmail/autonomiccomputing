@@ -1,350 +1,342 @@
-# Git Workflow Guide
+# Git Workflow and Best Practices
 
-**Repository**: https://github.com/Renandgmail/autonomiccomputing  
-**Last Updated**: 2026-03-26
+## Current Repository Status
 
-## Overview
+✅ **Successfully pushed latest improvements:**
+- Repository addition and analytics functionality fixes
+- Comprehensive integration test system
+- Frontend runtime error fixes
+- Authorization management for testing
 
-This document establishes clear Git practices for the RepoLens project, ensuring proper version control with **mandatory human approval** for all Git operations.
+## Git Workflow Best Practices
 
----
+### 1. Branch Management
 
-## Repository Structure
+#### Main Branches
+- **`master`** - Production-ready code
+- **`develop`** - Integration branch for features
+- **`feature/feature-name`** - Individual feature development
+- **`hotfix/issue-name`** - Critical production fixes
 
-### What's Properly Ignored (.gitignore)
-✅ **Node.js/React**: `node_modules/`, build artifacts, environment files  
-✅ **.NET**: `bin/`, `obj/`, build outputs, Visual Studio files  
-✅ **Database**: `*.db`, `*.sqlite` files  
-✅ **OS Files**: `.DS_Store`, `Thumbs.db`, etc.  
-✅ **IDE Files**: `.vscode/*`, `.idea/`, etc.  
-✅ **Secrets**: Production config files, local environment files
-
-### Current Status (as of 2026-03-26)
-- **Modified Files**: 22 files changed
-- **Deleted Files**: 6 files removed
-- **New Files**: Extensive Phase 1 implementation (Provider system, tests, documentation)
-- **Major Addition**: Complete React UI (`repolens-ui/` directory)
-
----
-
-## Git Workflow Commands
-
-### 🔒 Human Approval Required
-**ALL Git operations require explicit human approval before execution.**
-
-### Daily Workflow
-
-#### 1. Check Status
+#### Branch Commands
 ```bash
+# Create and switch to new feature branch
+git checkout -b feature/analytics-improvements
+
+# Switch between branches
+git checkout develop
+git checkout master
+
+# List all branches
+git branch -a
+
+# Delete merged branch
+git branch -d feature/analytics-improvements
+```
+
+### 2. Commit Message Standards
+
+#### Format
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Types
+- **feat**: New feature
+- **fix**: Bug fix
+- **docs**: Documentation changes
+- **style**: Code formatting (no logic changes)
+- **refactor**: Code restructuring
+- **test**: Adding or updating tests
+- **chore**: Maintenance tasks
+
+#### Examples
+```bash
+# Good commit messages
+git commit -m "feat(analytics): add comprehensive file metrics dashboard"
+git commit -m "fix(auth): resolve 401 unauthorized errors in API endpoints"
+git commit -m "test(integration): add database validation service tests"
+
+# Multi-line commit with description
+git commit -m "feat(analytics): implement real-time contributor analytics
+
+- Add contributor collaboration patterns analysis
+- Implement team productivity metrics
+- Add knowledge sharing assessment
+- Include bus factor risk analysis
+- Support hourly and daily activity patterns"
+```
+
+### 3. Pre-Commit Workflow
+
+#### Before Committing
+```bash
+# 1. Check status and review changes
 git status
-git diff --name-only
+git diff
+
+# 2. Stage specific files (preferred over git add .)
+git add RepoLens.Api/Controllers/AnalyticsController.cs
+git add repolens-ui/src/components/analytics/
+
+# 3. Run tests before committing
+dotnet test RepoLens.Tests/
+npm test --prefix repolens-ui
+
+# 4. Commit with descriptive message
+git commit -m "feat(analytics): implement contributor analytics dashboard"
 ```
 
-#### 2. Pull Latest Changes
+### 4. Working with Remote Repository
+
+#### Sync with Remote
 ```bash
+# Fetch latest changes from remote
+git fetch origin
+
+# Pull latest changes into current branch
 git pull origin master
+
+# Push current branch to remote
+git push origin feature/analytics-improvements
+
+# Push and set upstream for new branch
+git push -u origin feature/new-feature
 ```
 
-#### 3. Stage Changes (Selective)
+#### Before Pushing to Master
 ```bash
-# Stage specific files
-git add <file1> <file2>
+# 1. Ensure you're on the correct branch
+git branch
 
-# Stage all files (use carefully)
-git add .
+# 2. Pull latest changes
+git pull origin master
 
-# Stage by category
-git add *.cs          # Only C# files
-git add RepoLens.*/   # Only specific projects
-```
+# 3. Run full test suite
+dotnet test
+npm test --prefix repolens-ui
 
-#### 4. Review Changes Before Commit
-```bash
-git diff --cached     # Review staged changes
-git status           # Confirm what's being committed
-```
-
-#### 5. Commit with Clear Message
-```bash
-git commit -m "feat: implement provider abstraction system
-
-- Add IGitProviderService interface and factory pattern
-- Implement GitHub and Local providers
-- Add comprehensive unit and integration tests
-- Update database schema with ProviderType column
-- Complete Phase 1 foundation requirements"
-```
-
-#### 6. Push Changes (Human Approval)
-```bash
-# Push to remote (requires approval)
+# 4. Push changes
 git push origin master
 ```
 
----
+### 5. Feature Development Workflow
 
-## Commit Message Standards
-
-### Format
-```
-<type>: <description>
-
-<optional body>
-<optional footer>
-```
-
-### Types
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation changes
-- `style:` Code style/formatting
-- `refactor:` Code refactoring
-- `test:` Adding/updating tests
-- `chore:` Maintenance tasks
-
-### Examples
+#### Standard Feature Development
 ```bash
-git commit -m "feat: add local repository provider support"
-git commit -m "fix: resolve provider factory null reference"
-git commit -m "docs: update architecture documentation"
-git commit -m "test: add integration tests for local repositories"
+# 1. Create feature branch from develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/contributor-analytics
+
+# 2. Develop and commit incrementally
+git add <files>
+git commit -m "feat(analytics): add basic contributor metrics"
+
+git add <files>
+git commit -m "feat(analytics): implement team collaboration analysis"
+
+# 3. Push feature branch
+git push -u origin feature/contributor-analytics
+
+# 4. Create Pull Request (on GitHub)
+# 5. After review and approval, merge to develop
+# 6. Eventually merge develop to master for release
 ```
 
----
+### 6. Hotfix Workflow
 
-## Branch Strategy
-
-### Current: Single Branch (Master)
-- All development on `master` branch
-- Direct commits with human approval
-- Focus on code quality and testing
-
-### Future: Feature Branch Strategy
+#### Critical Production Fixes
 ```bash
-# Create feature branch
-git checkout -b feature/analytics-api
-git push -u origin feature/analytics-api
-
-# Merge back to master
+# 1. Create hotfix branch from master
 git checkout master
 git pull origin master
-git merge feature/analytics-api
+git checkout -b hotfix/critical-analytics-bug
+
+# 2. Fix the issue
+git add <fixed-files>
+git commit -m "fix(analytics): resolve null reference in dashboard"
+
+# 3. Push hotfix
+git push -u origin hotfix/critical-analytics-bug
+
+# 4. Merge to both master AND develop
+git checkout master
+git merge hotfix/critical-analytics-bug
 git push origin master
-git branch -d feature/analytics-api
+
+git checkout develop
+git merge hotfix/critical-analytics-bug
+git push origin develop
 ```
 
----
+### 7. Code Review Guidelines
 
-## Human Approval Process
+#### Pull Request Best Practices
+- **Small, focused PRs** - Easier to review
+- **Clear descriptions** - Explain what and why
+- **Link issues** - Reference related GitHub issues
+- **Test evidence** - Show tests pass
+- **Screenshots** - For UI changes
 
-### Simple Commands for Common Operations
+#### PR Template
+```markdown
+## Description
+Brief description of changes
 
-#### "Upload to Git" - Full Commit & Push
-Create a script: `commit-and-push.sh`
-```bash
-#!/bin/bash
-echo "🔍 Reviewing changes..."
-git status
-echo ""
-echo "📋 Files to be committed:"
-git diff --name-only --cached
-echo ""
-read -p "Approve commit and push? (y/N): " confirm
-if [[ $confirm == [yY] ]]; then
-    echo "📝 Enter commit message:"
-    read commit_msg
-    git commit -m "$commit_msg"
-    echo "🚀 Pushing to remote..."
-    git push origin master
-    echo "✅ Successfully pushed to Git!"
-else
-    echo "❌ Operation cancelled."
-fi
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Documentation update
+- [ ] Refactoring
+
+## Testing
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+
+## Checklist
+- [ ] Code follows style guidelines
+- [ ] Self-review completed
+- [ ] Comments added for complex code
+- [ ] Documentation updated
 ```
 
-#### "Quick Status" - Check Repository State
-Create a script: `git-status.sh`
+### 8. Release Management
+
+#### Version Tagging
 ```bash
-#!/bin/bash
-echo "📊 Repository Status:"
-echo "===================="
-git status --short
-echo ""
-echo "🌐 Remote Status:"
-git fetch
-git status
+# Create version tag
+git tag -a v1.2.0 -m "Release version 1.2.0 - Analytics improvements"
+
+# Push tags to remote
+git push origin --tags
+
+# List tags
+git tag -l
 ```
 
-#### "Safe Backup" - Stash Changes
-Create a script: `backup-changes.sh`
+#### Release Process
+1. **Feature freeze** on develop branch
+2. **Create release branch** from develop
+3. **Final testing** and bug fixes
+4. **Merge to master** and tag version
+5. **Deploy to production**
+6. **Merge back to develop**
+
+### 9. Emergency Procedures
+
+#### Undo Last Commit (Not Pushed)
 ```bash
-#!/bin/bash
-echo "💾 Backing up current changes..."
-git stash push -m "Auto-backup $(date)"
-echo "✅ Changes backed up. Use 'git stash pop' to restore."
+# Undo last commit but keep changes
+git reset --soft HEAD~1
+
+# Undo last commit and discard changes
+git reset --hard HEAD~1
 ```
 
----
-
-## Pre-Commit Checklist
-
-Before ANY commit, ensure:
-
-### ✅ Code Quality
-- [ ] Code compiles without errors: `dotnet build`
-- [ ] All tests pass: `dotnet test`
-- [ ] No sensitive data in files
-- [ ] Code follows project standards
-
-### ✅ Git Hygiene
-- [ ] Reviewed all staged files: `git diff --cached`
-- [ ] Commit message follows standards
-- [ ] No unnecessary files included
-- [ ] Large files properly excluded
-
-### ✅ Documentation
-- [ ] Update relevant documentation
-- [ ] Update action list if completing tasks
-- [ ] Add comments for complex changes
-
----
-
-## Emergency Procedures
-
-### Undo Last Commit (Local Only)
+#### Revert Pushed Commit
 ```bash
-git reset --soft HEAD~1  # Keep changes staged
-git reset --hard HEAD~1  # Discard changes completely
-```
-
-### Revert Pushed Commit
-```bash
+# Create a new commit that reverses changes
 git revert <commit-hash>
 git push origin master
 ```
 
-### Recover Lost Changes
+#### Reset to Previous State
 ```bash
-git reflog              # Find lost commits
-git checkout <commit>   # Restore specific commit
+# Reset local branch to remote state
+git fetch origin
+git reset --hard origin/master
 ```
 
----
+### 10. Useful Git Commands
 
-## Phase 1 Commit Strategy
-
-### Recommended Commit Structure for Current Changes
-
-#### Commit 1: Core Infrastructure
+#### Investigation
 ```bash
-git add .gitignore RepoLens.Core/ RepoLens.Infrastructure/ RepoLens.sln
-git commit -m "feat: implement core provider abstraction system
+# View commit history
+git log --oneline --graph
 
-- Add IGitProviderService interface and factory pattern
-- Implement ProviderType enum and RepositoryContext
-- Add database migration for provider support
-- Update project structure and dependencies"
+# Show changes in specific commit
+git show <commit-hash>
+
+# Find when bug was introduced
+git bisect start
+git bisect bad
+git bisect good <good-commit>
+
+# Search commit messages
+git log --grep="analytics"
+
+# Show file history
+git log --follow <filename>
 ```
 
-#### Commit 2: Provider Implementations
+#### Cleanup
 ```bash
-git add RepoLens.Infrastructure/Providers/
-git commit -m "feat: implement Git provider services
+# Remove untracked files
+git clean -fd
 
-- Add GitHub provider with full API integration
-- Add Local provider using LibGit2Sharp
-- Add stub providers for GitLab, Bitbucket, Azure DevOps
-- Implement comprehensive provider factory"
+# Prune deleted remote branches
+git remote prune origin
+
+# Delete merged local branches
+git branch --merged | grep -v master | xargs -n 1 git branch -d
 ```
 
-#### Commit 3: API and Commands
-```bash
-git add RepoLens.Api/
-git commit -m "feat: add API layer with provider integration
+## Current Project Setup
 
-- Implement repository validation service
-- Update AddRepositoryCommand to use provider factory
-- Add comprehensive controller endpoints
-- Configure dependency injection for all providers"
+### Repository Structure
+```
+autonomiccomputing/
+├── RepoLens.Api/          # Backend API
+├── RepoLens.Core/         # Business logic
+├── RepoLens.Infrastructure/ # Data access
+├── RepoLens.Tests/        # Test suites
+├── RepoLens.Worker/       # Background services
+├── repolens-ui/          # React frontend
+├── docs/                 # Documentation
+└── database/             # Database scripts
 ```
 
-#### Commit 4: Testing
+### Development Commands
 ```bash
-git add RepoLens.Tests/
-git commit -m "test: add comprehensive test suite
+# Start all services
+.\start-services-optimized.bat
 
-- Add unit tests for all provider services
-- Implement integration test with local repository fixture
-- Add validation service tests with all provider patterns
-- Test provider factory with comprehensive scenarios"
+# Run backend tests
+dotnet test RepoLens.Tests/
+
+# Run frontend tests
+npm test --prefix repolens-ui
+
+# Build for production
+dotnet build -c Release
+npm run build --prefix repolens-ui
 ```
 
-#### Commit 5: Documentation
-```bash
-git add *.md 00-* 01-* 02-* 03-* 04-* 05-* 06-* 07-* CONTRIBUTING.md
-git commit -m "docs: add comprehensive project documentation
-
-- Add architecture documentation and specifications
-- Create detailed action list and development workflow
-- Add integration test specifications
-- Document stakeholder review processes and escalation procedures"
-```
-
-#### Commit 6: React UI
-```bash
-git add repolens-ui/
-git commit -m "feat: add React frontend application
-
-- Complete React TypeScript application structure
-- Implement components for dashboard, repositories, analytics
-- Add authentication and search functionality
-- Configure build system and development environment"
-```
-
----
-
-## Security Considerations
-
-### Secrets Management
-- **NEVER commit**: API keys, passwords, connection strings
-- **Use**: Environment variables and local config files
-- **Exclude**: `appsettings.Production.json`, `.env.local`
-
-### File Size Limits
-- **Maximum**: 100MB per file
-- **Watch**: Database files, compiled binaries, large assets
-- **Use**: Git LFS for large files if needed
-
----
-
-## Getting Help
-
-### Commands Reference
-```bash
-git help <command>      # Detailed help for specific command
-git status             # Current repository state
-git log --oneline      # Commit history
-git diff              # Changes not yet staged
-git diff --cached     # Changes staged for commit
-```
-
-### Emergency Contact
-If Git operations fail or repository becomes corrupted:
-1. **Stop all operations**
-2. **Create backup**: Copy entire working directory
-3. **Document issue**: What commands were run
-4. **Seek help**: Before attempting recovery
-
----
+### Key Remotes
+- **Origin**: https://github.com/Renandgmail/autonomiccomputing.git
+- **Current Branch**: master
+- **Last Commit**: cfa8492 (comprehensive integration test system)
 
 ## Next Steps
 
-1. **Review current uncommitted changes**
-2. **Plan structured commits for Phase 1**
-3. **Execute commits with human approval**
-4. **Verify remote repository state**
-5. **Proceed with Phase 2 development**
+1. **Set up branch protection** rules on GitHub
+2. **Configure CI/CD pipeline** for automated testing
+3. **Establish code review** requirements
+4. **Create issue templates** for bug reports and features
+5. **Set up automated deployments** for staging/production
+
+## Emergency Contacts
+
+- **Repository Owner**: Renandgmail
+- **Primary Maintainer**: Development Team
+- **Critical Issues**: Create GitHub issue with `urgent` label
 
 ---
 
-*This workflow ensures proper version control while maintaining explicit human control over all repository operations.*
+**Remember**: Always pull before pushing, test before committing, and communicate changes with the team!

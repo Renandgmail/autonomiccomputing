@@ -11,18 +11,18 @@ public class MetricsCollectionService : IMetricsCollectionService
 {
     private readonly IRepositoryRepository _repositoryRepository;
     private readonly IRepositoryMetricsRepository _metricsRepository;
-    private readonly IGitService _gitService;
+    private readonly IGitProviderFactory _gitProviderFactory;
     private readonly ILogger<MetricsCollectionService> _logger;
 
     public MetricsCollectionService(
         IRepositoryRepository repositoryRepository,
         IRepositoryMetricsRepository metricsRepository,
-        IGitService gitService,
+        IGitProviderFactory gitProviderFactory,
         ILogger<MetricsCollectionService> logger)
     {
         _repositoryRepository = repositoryRepository;
         _metricsRepository = metricsRepository;
-        _gitService = gitService;
+        _gitProviderFactory = gitProviderFactory;
         _logger = logger;
     }
 
@@ -130,7 +130,44 @@ public class MetricsCollectionService : IMetricsCollectionService
 
             try
             {
-                using var gitRepo = await _gitService.OpenOrCloneRepositoryAsync(repository.Url, tempPath);
+                // Get the appropriate provider for this repository
+                var gitProvider = _gitProviderFactory.GetProvider(repository.Url);
+                
+                // Get repository context and metrics
+                var context = new RepositoryContext(
+                    repository.Id,
+                    repository.Url, 
+                    repository.ProviderType, 
+                    repository.AuthTokenReference, // This may be null for public repos
+                    tempPath, // Local clone path
+                    repository.Owner?.FirstName ?? "Unknown", // Use owner's name or fallback
+                    repository.Name);
+                
+                // Use provider to collect metrics instead of manual analysis
+                var providerMetrics = await gitProvider.CollectMetricsAsync(context);
+                
+                // Copy provider metrics to our metrics object
+                metrics.TotalFiles = providerMetrics.TotalFiles;
+                metrics.TotalDirectories = providerMetrics.TotalDirectories;
+                metrics.RepositorySizeBytes = providerMetrics.RepositorySizeBytes;
+                metrics.LanguageDistribution = providerMetrics.LanguageDistribution;
+                metrics.FileTypeDistribution = providerMetrics.FileTypeDistribution;
+                metrics.CommitsLastWeek = providerMetrics.CommitsLastWeek;
+                metrics.CommitsLastMonth = providerMetrics.CommitsLastMonth;
+                metrics.CommitsLastQuarter = providerMetrics.CommitsLastQuarter;
+                metrics.TotalContributors = providerMetrics.TotalContributors;
+                metrics.ActiveContributors = providerMetrics.ActiveContributors;
+                
+                // If provider metrics are incomplete, fall back to file system analysis for local repos
+                if (repository.ProviderType == ProviderType.Local && metrics.TotalFiles == 0)
+                {
+                    // For local repositories, analyze the directory structure directly
+                    var repoPath = repository.Url.StartsWith("file://") ? repository.Url[7..] : repository.Url;
+                    if (Directory.Exists(repoPath))
+                    {
+                        tempPath = repoPath; // Use the actual local path
+                    }
+                }
                 
                 // Analyze repository structure from actual files
                 var allFiles = Directory.GetFiles(tempPath, "*", SearchOption.AllDirectories)
@@ -288,92 +325,57 @@ public class MetricsCollectionService : IMetricsCollectionService
         {
             _logger.LogInformation("Analyzing Git history for {RepositoryName}", repository.Name);
             
+            // Get the appropriate provider for this repository
+            var gitProvider = _gitProviderFactory.GetProvider(repository.Url);
+            
             // Create a temporary directory for cloning
             var tempPath = Path.Combine(Path.GetTempPath(), "repolens", Guid.NewGuid().ToString());
             Directory.CreateDirectory(tempPath);
 
             try
             {
-                using var gitRepo = await _gitService.OpenOrCloneRepositoryAsync(repository.Url, tempPath);
+                // Get repository context
+                var context = new RepositoryContext(
+                    repository.Id,
+                    repository.Url, 
+                    repository.ProviderType, 
+                    repository.AuthTokenReference,
+                    tempPath,
+                    repository.Owner?.FirstName ?? "Unknown",
+                    repository.Name);
+
+                // Use provider to get repository metrics with git history
+                var providerMetrics = await gitProvider.CollectMetricsAsync(context);
                 
-                // Get all commits from the repository
-                var commits = await _gitService.GetCommitsAsync(gitRepo, repository.Id);
-                var commitList = commits.ToList();
-
-                if (commitList.Count == 0)
+                // Copy git history metrics from provider
+                if (providerMetrics.CommitsLastWeek > 0 || providerMetrics.CommitsLastMonth > 0)
                 {
-                    _logger.LogWarning("No commits found in repository {RepositoryName}", repository.Name);
+                    metrics.CommitsLastWeek = providerMetrics.CommitsLastWeek;
+                    metrics.CommitsLastMonth = providerMetrics.CommitsLastMonth;
+                    metrics.CommitsLastQuarter = providerMetrics.CommitsLastQuarter;
+                    metrics.TotalContributors = providerMetrics.TotalContributors;
+                    metrics.ActiveContributors = providerMetrics.ActiveContributors;
+                    metrics.DevelopmentVelocity = providerMetrics.DevelopmentVelocity;
+                    metrics.AverageCommitSize = providerMetrics.AverageCommitSize;
+                    metrics.FilesChangedLastWeek = providerMetrics.FilesChangedLastWeek;
+                    metrics.LinesAddedLastWeek = providerMetrics.LinesAddedLastWeek;
+                    metrics.LinesDeletedLastWeek = providerMetrics.LinesDeletedLastWeek;
+                    metrics.HourlyActivityPattern = providerMetrics.HourlyActivityPattern;
+                    metrics.DailyActivityPattern = providerMetrics.DailyActivityPattern;
+
+                    _logger.LogInformation("Git history analysis complete: {CommitsLastMonth} commits last month, {ActiveContributors} active contributors", 
+                        metrics.CommitsLastMonth, metrics.ActiveContributors);
+                }
+                else
+                {
+                    _logger.LogWarning("No git history data available from provider for repository {RepositoryName}", repository.Name);
                     SetDefaultGitMetrics(metrics);
-                    return;
                 }
-
-                var now = DateTime.UtcNow;
-                var lastWeek = now.AddDays(-7);
-                var lastMonth = now.AddDays(-30);
-                var lastQuarter = now.AddDays(-90);
-
-                // Calculate commit metrics
-                var commitsLastWeek = commitList.Count(c => c.Timestamp >= lastWeek);
-                var commitsLastMonth = commitList.Count(c => c.Timestamp >= lastMonth);
-                var commitsLastQuarter = commitList.Count(c => c.Timestamp >= lastQuarter);
-
-                metrics.CommitsLastWeek = commitsLastWeek;
-                metrics.CommitsLastMonth = commitsLastMonth;
-                metrics.CommitsLastQuarter = commitsLastQuarter;
-
-                // Calculate contributor metrics
-                var allContributors = commitList.Select(c => c.Author).Distinct().ToList();
-                var activeContributors = commitList
-                    .Where(c => c.Timestamp >= lastMonth)
-                    .Select(c => c.Author)
-                    .Distinct()
-                    .Count();
-
-                metrics.TotalContributors = allContributors.Count;
-                metrics.ActiveContributors = activeContributors;
-
-                // Calculate average commit size (estimated)
-                if (commitList.Count > 1)
-                {
-                    metrics.AverageCommitSize = 25.0; // This would require diff analysis for accuracy
-                }
-
-                // Estimate development velocity (commits per week)
-                var totalWeeks = Math.Max(1, (now - commitList.Last().Timestamp).TotalDays / 7);
-                metrics.DevelopmentVelocity = commitList.Count / totalWeeks;
-
-                // Estimate file change metrics (simplified)
-                metrics.FilesChangedLastWeek = commitsLastWeek * 3; // Rough estimate
-                metrics.LinesAddedLastWeek = commitsLastWeek * 50; // Rough estimate
-                metrics.LinesDeletedLastWeek = commitsLastWeek * 20; // Rough estimate
-
-                // Calculate activity patterns
-                var hourlyActivity = new Dictionary<string, int>();
-                for (int i = 0; i < 24; i++)
-                {
-                    var hour = i.ToString();
-                    var count = commitList.Count(c => c.Timestamp.Hour == i);
-                    hourlyActivity[hour] = count;
-                }
-                metrics.HourlyActivityPattern = JsonSerializer.Serialize(hourlyActivity);
-
-                var dailyActivity = new Dictionary<string, int>();
-                var dayNames = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-                for (int i = 0; i < 7; i++)
-                {
-                    var dayName = dayNames[i];
-                    var count = commitList.Count(c => (int)c.Timestamp.DayOfWeek == i);
-                    dailyActivity[dayName] = count;
-                }
-                metrics.DailyActivityPattern = JsonSerializer.Serialize(dailyActivity);
-
-                _logger.LogInformation("Git history analysis complete: {TotalCommits} commits, {ActiveContributors} active contributors", 
-                    commitList.Count, activeContributors);
             }
             finally
             {
                 // Clean up temporary directory
-                if (Directory.Exists(tempPath))
+                if (Directory.Exists(tempPath) && !tempPath.Equals(repository.Url))
                 {
                     Directory.Delete(tempPath, true);
                 }

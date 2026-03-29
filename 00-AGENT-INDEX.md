@@ -27,7 +27,7 @@ Read documents in this exact order for each phase of work:
 | 00 | `00-AGENT-INDEX.md` | **This file** — system overview and rules | First, always |
 | 01 | `01-AGENT-RULES.md` | Immutable operating rules for every loop iteration | Before starting any task |
 | 02 | `02-DEVELOPMENT-LOOP.md` | The step-by-step loop: implement → compile → regress → integrate → review → prioritise | Before every implementation cycle |
-| 03 | `03-ARCHITECTURE.md` | Full system architecture, provider-agnostic design, extension points | When designing or changing structure |
+| 03 | `01-SYSTEM-ARCHITECTURE-AND-DESIGN.md` | Full system architecture, provider-agnostic design, extension points | When designing or changing structure |
 | 04 | `04-ACTION-LIST.md` | The living backlog — tasks, statuses, priorities, stakeholder gaps | To find what to do next and to record what was done |
 | 05 | `05-INTEGRATION-TEST-SPEC.md` | Exact specification for every integration test scenario | When writing or reviewing integration tests |
 | 06 | `06-STAKEHOLDER-REVIEW-TEMPLATE.md` | Review checklist for UX, Domain, Architecture, DevOps perspectives | When conducting end-of-phase stakeholder reviews |

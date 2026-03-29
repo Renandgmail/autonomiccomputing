@@ -1,0 +1,96 @@
+version: '3.8'
+
+# Development Docker Compose configuration
+# Use: docker compose -f docker-compose.dev.yml up
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: repolens-postgres-dev
+    environment:
+      POSTGRES_DB: repolens_dev
+      POSTGRES_USER: repolens_user
+      POSTGRES_PASSWORD: repolens_dev_password
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts with local PostgreSQL
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: repolens-redis-dev
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts with local Redis
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+  # RepoLens API Backend (Development mode)
+  api:
+    build:
+      context: .
+      dockerfile: RepoLens.Api/Dockerfile
+    container_name: repolens-api-dev
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=repolens_dev;Username=repolens_user;Password=repolens_dev_password
+      - Redis__ConnectionString=redis:6379
+      - JWT__Secret=DevelopmentJWTSecretKey123456789
+      - JWT__Issuer=RepoLens-Dev
+      - JWT__Audience=RepoLensUsers-Dev
+      - CodeIntelligence__EnablePatternMining=false  # Disabled for faster development
+      - CodeIntelligence__MaxConcurrentAnalysis=1
+      - Serilog__MinimumLevel=Debug
+      - Serilog__WriteTo__0__Name=Console
+    ports:
+      - "5001:80"  # Different port for development
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+      - ./repositories:/app/repositories
+      - ./RepoLens.Api:/app/src  # Volume mount for hot reload (if using dotnet watch)
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+  # Development UI (will use npm start for hot reload)
+  ui-dev:
+    build:
+      context: ./repolens-ui
+      dockerfile: Dockerfile.dev
+      args:
+        REACT_APP_API_BASE_URL: http://localhost:5001
+    container_name: repolens-ui-dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # For file watching in Docker
+      - FAST_REFRESH=true
+    ports:
+      - "3001:3000"  # Development UI port
+    volumes:
+      - ./repolens-ui/src:/app/src  # Hot reload for React
+      - ./repolens-ui/public:/app/public
+      - /app/node_modules  # Exclude node_modules from volume mount
+    depends_on:
+      - api
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+networks:
+  repolens-network:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local

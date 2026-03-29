@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RepoLens.Api.Models;
 using RepoLens.Core.Repositories;
 using RepoLens.Core.Entities;
+using HealthStatus = RepoLens.Api.Models.HealthStatus;
 
 namespace RepoLens.Api.Controllers;
 
@@ -112,10 +113,10 @@ public class DashboardController : ControllerBase
             var health = new SystemHealthViewModel
             {
                 CheckedAt = DateTime.UtcNow,
-                OverallStatus = totalRepos > 0 ? HealthStatus.Healthy : HealthStatus.Warning,
+                OverallStatus = totalRepos > 0 ? Models.HealthStatus.Healthy : Models.HealthStatus.Warning,
                 DatabaseHealth = new HealthCheckResult
                 {
-                    Status = HealthStatus.Healthy,
+                    Status = Models.HealthStatus.Healthy,
                     ResponseTimeMs = 15,
                     Message = "Database connection successful",
                     Details = new Dictionary<string, object>
@@ -126,7 +127,7 @@ public class DashboardController : ControllerBase
                 },
                 StorageHealth = new HealthCheckResult
                 {
-                    Status = HealthStatus.Healthy,
+                    Status = Models.HealthStatus.Healthy,
                     ResponseTimeMs = 8,
                     Message = "Storage system operational",
                     Details = new Dictionary<string, object>
@@ -162,7 +163,7 @@ public class DashboardController : ControllerBase
             var errorHealth = new SystemHealthViewModel
             {
                 CheckedAt = DateTime.UtcNow,
-                OverallStatus = HealthStatus.Critical,
+                OverallStatus = Models.HealthStatus.Critical,
                 ErrorMessage = "System health check failed"
             };
             

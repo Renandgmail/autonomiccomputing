@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@mui/material": "^6.1.6",
-    "@mui/icons-material": "^6.1.6",
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
+    "@microsoft/signalr": "^10.0.0",
+    "@mui/icons-material": "^6.1.6",
+    "@mui/material": "^6.1.6",
     "@tanstack/react-query": "^5.62.8",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

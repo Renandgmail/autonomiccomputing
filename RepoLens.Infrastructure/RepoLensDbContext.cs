@@ -22,6 +22,17 @@ public class RepoLensDbContext(DbContextOptions<RepoLensDbContext> options)
     public DbSet<RepositoryMetrics> RepositoryMetrics => Set<RepositoryMetrics>();
     public DbSet<ContributorMetrics> ContributorMetrics => Set<ContributorMetrics>();
     public DbSet<FileMetrics> FileMetrics => Set<FileMetrics>();
+    
+    // Code Intelligence entities (Action Item #3)
+    public DbSet<RepositoryFile> RepositoryFiles => Set<RepositoryFile>();
+    public DbSet<CodeElement> CodeElements => Set<CodeElement>();
+    
+    // Vocabulary entities (Action Item #5)
+    public DbSet<VocabularyTerm> VocabularyTerms => Set<VocabularyTerm>();
+    public DbSet<VocabularyLocation> VocabularyLocations => Set<VocabularyLocation>();
+    public DbSet<VocabularyTermRelationship> VocabularyTermRelationships => Set<VocabularyTermRelationship>();
+    public DbSet<BusinessConcept> BusinessConcepts => Set<BusinessConcept>();
+    public DbSet<VocabularyStats> VocabularyStats => Set<VocabularyStats>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -228,6 +239,228 @@ public class RepoLensDbContext(DbContextOptions<RepoLensDbContext> options)
             
             // Ignore navigation property to avoid conflicts
             entity.Ignore(fm => fm.Repository);
+        });
+
+        // Configure Code Intelligence entities (Action Item #3)
+        modelBuilder.Entity<RepositoryFile>(entity =>
+        {
+            entity.HasKey(rf => rf.Id);
+            entity.HasIndex(rf => new { rf.RepositoryId, rf.FilePath }).IsUnique();
+            entity.HasIndex(rf => rf.FileExtension);
+            entity.HasIndex(rf => rf.Language);
+            entity.HasIndex(rf => rf.ProcessingStatus);
+            
+            entity.Property(rf => rf.ProcessingStatus).HasConversion<string>();
+            
+            entity.HasOne(rf => rf.Repository)
+                  .WithMany(r => r.RepositoryFiles)
+                  .HasForeignKey(rf => rf.RepositoryId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CodeElement>(entity =>
+        {
+            entity.HasKey(ce => ce.Id);
+            entity.HasIndex(ce => ce.FileId);
+            entity.HasIndex(ce => ce.ElementType);
+            entity.HasIndex(ce => ce.Name);
+            
+            entity.Property(ce => ce.ElementType).HasConversion<string>();
+            entity.Property(ce => ce.Parameters).HasColumnType("TEXT"); // PostgreSQL JSON as TEXT
+            
+            entity.HasOne(ce => ce.RepositoryFile)
+                  .WithMany(rf => rf.CodeElements)
+                  .HasForeignKey(ce => ce.FileId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure Vocabulary entities (Action Item #5)
+        modelBuilder.Entity<VocabularyTerm>(entity =>
+        {
+            entity.HasKey(vt => vt.Id);
+            entity.HasIndex(vt => new { vt.RepositoryId, vt.NormalizedTerm }).IsUnique();
+            entity.HasIndex(vt => vt.TermType);
+            entity.HasIndex(vt => vt.Source);
+            entity.HasIndex(vt => vt.Domain);
+            entity.HasIndex(vt => vt.RelevanceScore);
+
+            entity.Property(vt => vt.Term).IsRequired().HasMaxLength(200);
+            entity.Property(vt => vt.NormalizedTerm).IsRequired().HasMaxLength(200);
+            entity.Property(vt => vt.TermType).HasConversion<string>();
+            entity.Property(vt => vt.Source).HasConversion<string>();
+            entity.Property(vt => vt.Language).HasMaxLength(50);
+            entity.Property(vt => vt.Context).HasMaxLength(2000);
+            entity.Property(vt => vt.Definition).HasMaxLength(1000);
+            entity.Property(vt => vt.Domain).HasMaxLength(100);
+
+            // Configure JSON columns with proper serialization
+            entity.Property(vt => vt.Synonyms)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vt => vt.RelatedTerms)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vt => vt.UsageExamples)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vt => vt.Metadata)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, object>())
+                  .HasColumnType("TEXT");
+
+            entity.HasOne(vt => vt.Repository)
+                  .WithMany()
+                  .HasForeignKey(vt => vt.RepositoryId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VocabularyLocation>(entity =>
+        {
+            entity.HasKey(vl => vl.Id);
+            entity.HasIndex(vl => vl.VocabularyTermId);
+            entity.HasIndex(vl => vl.FilePath);
+
+            entity.Property(vl => vl.FilePath).IsRequired().HasMaxLength(1000);
+            entity.Property(vl => vl.ContextType).HasConversion<string>();
+            entity.Property(vl => vl.ContextDescription).HasMaxLength(500);
+            entity.Property(vl => vl.SurroundingCode).HasMaxLength(2000);
+
+            entity.HasOne(vl => vl.VocabularyTerm)
+                  .WithMany(vt => vt.Locations)
+                  .HasForeignKey(vl => vl.VocabularyTermId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VocabularyTermRelationship>(entity =>
+        {
+            entity.HasKey(vtr => vtr.Id);
+            entity.HasIndex(vtr => new { vtr.FromTermId, vtr.ToTermId }).IsUnique();
+            entity.HasIndex(vtr => vtr.RelationshipType);
+
+            entity.Property(vtr => vtr.RelationshipType).HasConversion<string>();
+            entity.Property(vtr => vtr.Context).HasMaxLength(500);
+            entity.Property(vtr => vtr.Evidence)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.HasOne(vtr => vtr.FromTerm)
+                  .WithMany(vt => vt.FromRelationships)
+                  .HasForeignKey(vtr => vtr.FromTermId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(vtr => vtr.ToTerm)
+                  .WithMany(vt => vt.ToRelationships)
+                  .HasForeignKey(vtr => vtr.ToTermId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BusinessConcept>(entity =>
+        {
+            entity.HasKey(bc => bc.Id);
+            entity.HasIndex(bc => bc.RepositoryId);
+            entity.HasIndex(bc => bc.Domain);
+            entity.HasIndex(bc => bc.ConceptType);
+
+            entity.Property(bc => bc.Name).IsRequired().HasMaxLength(200);
+            entity.Property(bc => bc.Description).HasMaxLength(1000);
+            entity.Property(bc => bc.Domain).HasMaxLength(100);
+            entity.Property(bc => bc.ConceptType).HasConversion<string>();
+
+            // Configure JSON columns
+            entity.Property(bc => bc.Keywords)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(bc => bc.TechnicalMappings)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(bc => bc.BusinessPurposes)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(bc => bc.RelatedTermIds)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<int>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<int>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(bc => bc.Properties)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, object>())
+                  .HasColumnType("TEXT");
+
+            entity.HasOne(bc => bc.Repository)
+                  .WithMany()
+                  .HasForeignKey(bc => bc.RepositoryId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VocabularyStats>(entity =>
+        {
+            entity.HasKey(vs => vs.Id);
+            entity.HasIndex(vs => vs.RepositoryId).IsUnique();
+
+            // Configure JSON columns with proper serialization
+            entity.Property(vs => vs.LanguageDistribution)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, int>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vs => vs.DomainDistribution)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<string, int>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vs => vs.SourceDistribution)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<VocabularySource, int>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new Dictionary<VocabularySource, int>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vs => vs.TopDomains)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vs => vs.EmergingTerms)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.Property(vs => vs.DeprecatedTerms)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+
+            entity.HasOne(vs => vs.Repository)
+                  .WithMany()
+                  .HasForeignKey(vs => vs.RepositoryId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

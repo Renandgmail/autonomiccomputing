@@ -168,6 +168,146 @@ namespace RepoLens.Infrastructure.Migrations
                     b.ToTable("ArtifactVersions");
                 });
 
+            modelBuilder.Entity("RepoLens.Core.Entities.BusinessConcept", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BusinessPurposes")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConceptType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Confidence")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Domain")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Keywords")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Properties")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RelatedTermIds")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RepositoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TechnicalMappings")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConceptType");
+
+                    b.HasIndex("Domain");
+
+                    b.HasIndex("RepositoryId");
+
+                    b.ToTable("BusinessConcepts");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.CodeElement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccessModifier")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int?>("Complexity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Documentation")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ElementType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("EndLine")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FileId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FullyQualifiedName")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<bool>("IsAsync")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsStatic")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Parameters")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReturnType")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Signature")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StartLine")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ElementType");
+
+                    b.HasIndex("FileId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("CodeElements");
+                });
+
             modelBuilder.Entity("RepoLens.Core.Entities.Commit", b =>
                 {
                     b.Property<string>("Sha")
@@ -677,6 +817,12 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<int>("ProviderType")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ScanErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ScanStatus")
+                        .HasColumnType("text");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -689,6 +835,12 @@ namespace RepoLens.Infrastructure.Migrations
 
                     b.Property<DateTime?>("TokenExpiresAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TotalFiles")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalLines")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -715,6 +867,78 @@ namespace RepoLens.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Repositories");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.RepositoryFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FileExtension")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("FileHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("LastModified")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LineCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProcessingStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ProcessingTime")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RepositoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FileExtension");
+
+                    b.HasIndex("Language");
+
+                    b.HasIndex("ProcessingStatus");
+
+                    b.HasIndex("RepositoryId", "FilePath")
+                        .IsUnique();
+
+                    b.ToTable("RepositoryFiles");
                 });
 
             modelBuilder.Entity("RepoLens.Core.Entities.RepositoryMetrics", b =>
@@ -1084,6 +1308,281 @@ namespace RepoLens.Infrastructure.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyLocation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContextDescription")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ContextType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("EndColumn")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EndLine")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("FoundAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StartColumn")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("StartLine")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SurroundingCode")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("VocabularyTermId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FilePath");
+
+                    b.HasIndex("VocabularyTermId");
+
+                    b.ToTable("VocabularyLocations");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyStats", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("AverageRelevanceScore")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("BusinessTechnicalRatio")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("BusinessTerms")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeprecatedTerms")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DomainDistribution")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DomainSpecificTerms")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("EmergingTerms")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LanguageDistribution")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RepositoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceDistribution")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TechnicalTerms")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TopDomains")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("TotalTerms")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UniqueTerms")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("VocabularyDensity")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RepositoryId")
+                        .IsUnique();
+
+                    b.ToTable("VocabularyStats");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyTerm", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("BusinessRelevance")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Context")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Definition")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Domain")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("FirstSeen")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("LastSeen")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NormalizedTerm")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("RelatedTerms")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("RelevanceScore")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("RepositoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Synonyms")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("TechnicalRelevance")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Term")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("TermType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UsageExamples")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Domain");
+
+                    b.HasIndex("RelevanceScore");
+
+                    b.HasIndex("Source");
+
+                    b.HasIndex("TermType");
+
+                    b.HasIndex("RepositoryId", "NormalizedTerm")
+                        .IsUnique();
+
+                    b.ToTable("VocabularyTerms");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyTermRelationship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CoOccurrenceCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Context")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Evidence")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FromTermId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RelationshipType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Strength")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ToTermId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RelationshipType");
+
+                    b.HasIndex("ToTermId");
+
+                    b.HasIndex("FromTermId", "ToTermId")
+                        .IsUnique();
+
+                    b.ToTable("VocabularyTermRelationships");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("RepoLens.Core.Entities.Role", null)
@@ -1129,6 +1628,28 @@ namespace RepoLens.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RepoLens.Core.Entities.BusinessConcept", b =>
+                {
+                    b.HasOne("RepoLens.Core.Entities.Repository", "Repository")
+                        .WithMany()
+                        .HasForeignKey("RepositoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Repository");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.CodeElement", b =>
+                {
+                    b.HasOne("RepoLens.Core.Entities.RepositoryFile", "RepositoryFile")
+                        .WithMany("CodeElements")
+                        .HasForeignKey("FileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RepositoryFile");
+                });
+
             modelBuilder.Entity("RepoLens.Core.Entities.ContributorMetrics", b =>
                 {
                     b.HasOne("RepoLens.Core.Entities.Repository", null)
@@ -1162,6 +1683,17 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Navigation("Organization");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.RepositoryFile", b =>
+                {
+                    b.HasOne("RepoLens.Core.Entities.Repository", "Repository")
+                        .WithMany("RepositoryFiles")
+                        .HasForeignKey("RepositoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Repository");
                 });
 
             modelBuilder.Entity("RepoLens.Core.Entities.RepositoryMetrics", b =>
@@ -1209,6 +1741,58 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyLocation", b =>
+                {
+                    b.HasOne("RepoLens.Core.Entities.VocabularyTerm", "VocabularyTerm")
+                        .WithMany("Locations")
+                        .HasForeignKey("VocabularyTermId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("VocabularyTerm");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyStats", b =>
+                {
+                    b.HasOne("RepoLens.Core.Entities.Repository", "Repository")
+                        .WithMany()
+                        .HasForeignKey("RepositoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Repository");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyTerm", b =>
+                {
+                    b.HasOne("RepoLens.Core.Entities.Repository", "Repository")
+                        .WithMany()
+                        .HasForeignKey("RepositoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Repository");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyTermRelationship", b =>
+                {
+                    b.HasOne("RepoLens.Core.Entities.VocabularyTerm", "FromTerm")
+                        .WithMany("FromRelationships")
+                        .HasForeignKey("FromTermId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RepoLens.Core.Entities.VocabularyTerm", "ToTerm")
+                        .WithMany("ToRelationships")
+                        .HasForeignKey("ToTermId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FromTerm");
+
+                    b.Navigation("ToTerm");
+                });
+
             modelBuilder.Entity("RepoLens.Core.Entities.Organization", b =>
                 {
                     b.Navigation("Repositories");
@@ -1225,6 +1809,13 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Navigation("FileMetrics");
 
                     b.Navigation("Metrics");
+
+                    b.Navigation("RepositoryFiles");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.RepositoryFile", b =>
+                {
+                    b.Navigation("CodeElements");
                 });
 
             modelBuilder.Entity("RepoLens.Core.Entities.Role", b =>
@@ -1237,6 +1828,15 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Navigation("OwnedRepositories");
 
                     b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("RepoLens.Core.Entities.VocabularyTerm", b =>
+                {
+                    b.Navigation("FromRelationships");
+
+                    b.Navigation("Locations");
+
+                    b.Navigation("ToRelationships");
                 });
 #pragma warning restore 612, 618
         }

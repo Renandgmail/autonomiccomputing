@@ -35,11 +35,14 @@ import {
   Schedule,
   OpenInNew,
   Refresh,
-  Analytics
+  Analytics,
+  GitHub as GitHubIcon,
+  Code as CodeIcon,
+  CloudDownload as AzureIcon
 } from '@mui/icons-material';
 // import { useForm } from 'react-hook-form';
 import apiService from '../../services/apiService';
-import { Repository, ProcessingStatus, RepositoryStatus } from '../../types/api';
+import { Repository, ProcessingStatus, RepositoryStatus, ProviderType } from '../../types/api';
 
 // interface AddRepositoryForm {
 //   url: string;
@@ -199,6 +202,60 @@ const Repositories: React.FC = () => {
     return repo.name || repo.url.split('/').pop()?.replace('.git', '') || 'Unknown';
   };
 
+  const getProviderDisplayName = (providerType: ProviderType): string => {
+    switch (providerType) {
+      case ProviderType.GitHub:
+        return 'GitHub';
+      case ProviderType.GitLab:
+        return 'GitLab';
+      case ProviderType.Bitbucket:
+        return 'Bitbucket';
+      case ProviderType.AzureDevOps:
+        return 'Azure DevOps';
+      case ProviderType.Local:
+        return 'Local';
+      case ProviderType.Unknown:
+      default:
+        return 'Git';
+    }
+  };
+
+  const getProviderIcon = (providerType: ProviderType) => {
+    switch (providerType) {
+      case ProviderType.GitHub:
+        return <GitHubIcon fontSize="small" />;
+      case ProviderType.GitLab:
+        return <Language fontSize="small" />;
+      case ProviderType.Bitbucket:
+        return <CodeIcon fontSize="small" />;
+      case ProviderType.AzureDevOps:
+        return <AzureIcon fontSize="small" />;
+      case ProviderType.Local:
+        return <Folder fontSize="small" />;
+      case ProviderType.Unknown:
+      default:
+        return <CodeIcon fontSize="small" />;
+    }
+  };
+
+  const getProviderColor = (providerType: ProviderType): string => {
+    switch (providerType) {
+      case ProviderType.GitHub:
+        return '#24292e';
+      case ProviderType.GitLab:
+        return '#fc6d26';
+      case ProviderType.Bitbucket:
+        return '#0052cc';
+      case ProviderType.AzureDevOps:
+        return '#0078d4';
+      case ProviderType.Local:
+        return '#757575';
+      case ProviderType.Unknown:
+      default:
+        return '#1976d2';
+    }
+  };
+
   useEffect(() => {
     loadRepositories();
   }, []);
@@ -295,6 +352,18 @@ const Repositories: React.FC = () => {
                     )}
 
                     <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                      <Chip
+                        icon={getProviderIcon(repo.providerType)}
+                        label={getProviderDisplayName(repo.providerType)}
+                        size="small"
+                        sx={{
+                          backgroundColor: getProviderColor(repo.providerType),
+                          color: 'white',
+                          '& .MuiChip-icon': {
+                            color: 'white'
+                          }
+                        }}
+                      />
                       <Chip
                         label={RepositoryStatus[repo.status]}
                         color={getStatusColor(repo.status)}

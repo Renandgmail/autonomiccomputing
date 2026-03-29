@@ -43,7 +43,7 @@ If no unblocked action exists, read `07-HALT-AND-ESCALATE.md` and stop.
 Write the minimum code needed to satisfy the done condition.
 
 Guidelines:
-- Follow the architecture in `03-ARCHITECTURE.md`
+- Follow the architecture in `01-SYSTEM-ARCHITECTURE-AND-DESIGN.md`
 - If the change requires a new interface, define it in `RepoLens.Core`
 - If the change requires a new database column, add a migration — never edit existing migrations
 - If the change requires a new UI component, place it in the correct component subfolder

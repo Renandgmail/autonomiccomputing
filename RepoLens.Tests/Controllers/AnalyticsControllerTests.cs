@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -6,7 +5,6 @@ using RepoLens.Api.Controllers;
 using RepoLens.Api.Models;
 using RepoLens.Core.Entities;
 using RepoLens.Core.Repositories;
-using System.Security.Claims;
 using Xunit;
 
 namespace RepoLens.Tests.Controllers;
@@ -22,19 +20,6 @@ public class AnalyticsControllerTests
         _mockMetricsRepository = new Mock<IRepositoryMetricsRepository>();
         _mockLogger = new Mock<ILogger<AnalyticsController>>();
         _controller = new AnalyticsController(_mockMetricsRepository.Object, _mockLogger.Object);
-
-        // Setup controller context for authorization
-        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, "1"),
-            new Claim(ClaimTypes.Name, "test@example.com"),
-            new Claim(ClaimTypes.Email, "test@example.com")
-        }, "mock"));
-
-        _controller.ControllerContext = new ControllerContext()
-        {
-            HttpContext = new DefaultHttpContext() { User = user }
-        };
     }
 
     [Fact]
@@ -42,190 +27,338 @@ public class AnalyticsControllerTests
     {
         // Arrange
         var repositoryId = 1;
-        var mockMetrics = CreateMockMetricsList();
+        var startDate = DateTime.UtcNow.AddDays(-30);
+        var endDate = DateTime.UtcNow;
         
-        _mockMetricsRepository.Setup(x => x.GetMetricsHistoryAsync(
-            It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        var mockMetrics = new List<RepositoryMetrics>
+        {
+            new RepositoryMetrics
+            {
+                Id = 1,
+                RepositoryId = repositoryId,
+                MeasurementDate = DateTime.UtcNow.AddDays(-15),
+                CommitsLastMonth = 25,
+                TotalFiles = 150,
+                RepositorySizeBytes = 1024000,
+                ActiveContributors = 3,
+                MaintainabilityIndex = 85.5,
+                LineCoveragePercentage = 75.0,
+                DocumentationCoverage = 80.0,
+                AverageCyclomaticComplexity = 2.5,
+                TechnicalDebtHours = 12.5,
+                BuildSuccessRate = 95.0,
+                SecurityVulnerabilities = 1,
+                BusFactor = 3.0,
+                TotalLinesOfCode = 5000,
+                DevelopmentVelocity = 8.2
+            },
+            new RepositoryMetrics
+            {
+                Id = 2,
+                RepositoryId = repositoryId,
+                MeasurementDate = DateTime.UtcNow.AddDays(-10),
+                CommitsLastMonth = 30,
+                TotalFiles = 155,
+                RepositorySizeBytes = 1100000,
+                ActiveContributors = 4,
+                MaintainabilityIndex = 87.2,
+                LineCoveragePercentage = 78.0,
+                DocumentationCoverage = 85.0,
+                AverageCyclomaticComplexity = 2.0,
+                TechnicalDebtHours = 11.0,
+                BuildSuccessRate = 98.0,
+                SecurityVulnerabilities = 0,
+                BusFactor = 4.0,
+                TotalLinesOfCode = 5200,
+                DevelopmentVelocity = 9.1
+            }
+        };
+
+        _mockMetricsRepository
+            .Setup(x => x.GetMetricsHistoryAsync(repositoryId, It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(mockMetrics);
 
         // Act
-        var result = await _controller.GetRepositoryHistory(repositoryId);
+        var result = await _controller.GetRepositoryHistory(repositoryId, startDate, endDate);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = result as OkObjectResult;
-        Assert.NotNull(okResult?.Value);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
         
-        // Verify repository was called with correct parameters
-        _mockMetricsRepository.Verify(x => x.GetMetricsHistoryAsync(
-            repositoryId, It.IsAny<DateTime>(), It.IsAny<DateTime>()), Times.Once);
+        // Verify the repository was called with correct parameters
+        _mockMetricsRepository.Verify(
+            x => x.GetMetricsHistoryAsync(repositoryId, It.IsAny<DateTime>(), It.IsAny<DateTime>()), 
+            Times.Once);
     }
 
     [Fact]
-    public async Task GetRepositoryHistory_WithNoData_ReturnsEmptyResult()
+    public async Task GetRepositoryTrends_WithValidData_ReturnsChartData()
     {
         // Arrange
         var repositoryId = 1;
-        _mockMetricsRepository.Setup(x => x.GetMetricsHistoryAsync(
-            It.IsAny<int>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .ReturnsAsync(new List<RepositoryMetrics>());
+        var days = 30;
+        
+        var mockTrendData = new List<RepositoryMetrics>
+        {
+            new RepositoryMetrics
+            {
+                Id = 1,
+                RepositoryId = repositoryId,
+                MeasurementDate = DateTime.UtcNow.AddDays(-20),
+                CommitsLastMonth = 20,
+                TotalFiles = 100,
+                MaintainabilityIndex = 80.0,
+                LineCoveragePercentage = 75.0,
+                DocumentationCoverage = 70.0,
+                AverageCyclomaticComplexity = 3.0,
+                TechnicalDebtHours = 15.0,
+                BuildSuccessRate = 90.0,
+                SecurityVulnerabilities = 2,
+                BusFactor = 2.0,
+                ActiveContributors = 2,
+                RepositorySizeBytes = 900000
+            },
+            new RepositoryMetrics
+            {
+                Id = 2,
+                RepositoryId = repositoryId,
+                MeasurementDate = DateTime.UtcNow.AddDays(-10),
+                CommitsLastMonth = 25,
+                TotalFiles = 110,
+                MaintainabilityIndex = 85.0,
+                LineCoveragePercentage = 80.0,
+                DocumentationCoverage = 75.0,
+                AverageCyclomaticComplexity = 2.5,
+                TechnicalDebtHours = 10.0,
+                BuildSuccessRate = 95.0,
+                SecurityVulnerabilities = 1,
+                BusFactor = 3.0,
+                ActiveContributors = 3,
+                RepositorySizeBytes = 1000000
+            }
+        };
 
-        // Act
-        var result = await _controller.GetRepositoryHistory(repositoryId);
-
-        // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = result as OkObjectResult;
-        Assert.NotNull(okResult?.Value);
-    }
-
-    [Fact]
-    public async Task GetRepositoryTrends_WithValidRepositoryId_ReturnsSuccessResult()
-    {
-        // Arrange
-        var repositoryId = 1;
-        var mockMetrics = CreateMockMetricsList();
-        var mockTrends = new Dictionary<string, object>
+        var mockSummaryTrends = new Dictionary<string, object>
         {
             ["commits_trend"] = 5,
             ["files_trend"] = 10,
-            ["quality_trend"] = 2.5
+            ["quality_trend"] = 5.0,
+            ["period_days"] = days
         };
 
-        _mockMetricsRepository.Setup(x => x.GetTrendDataAsync(repositoryId, It.IsAny<int>()))
-            .ReturnsAsync(mockMetrics);
-        _mockMetricsRepository.Setup(x => x.GetSummaryTrendsAsync(repositoryId, It.IsAny<int>()))
-            .ReturnsAsync(mockTrends);
+        _mockMetricsRepository
+            .Setup(x => x.GetTrendDataAsync(repositoryId, days))
+            .ReturnsAsync(mockTrendData);
+
+        _mockMetricsRepository
+            .Setup(x => x.GetSummaryTrendsAsync(repositoryId, days))
+            .ReturnsAsync(mockSummaryTrends);
 
         // Act
-        var result = await _controller.GetRepositoryTrends(repositoryId, 30);
+        var result = await _controller.GetRepositoryTrends(repositoryId, days);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = result as OkObjectResult;
-        Assert.NotNull(okResult?.Value);
-
-        _mockMetricsRepository.Verify(x => x.GetTrendDataAsync(repositoryId, 30), Times.Once);
-        _mockMetricsRepository.Verify(x => x.GetSummaryTrendsAsync(repositoryId, 30), Times.Once);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
+        
+        // Verify both methods were called
+        _mockMetricsRepository.Verify(x => x.GetTrendDataAsync(repositoryId, days), Times.Once);
+        _mockMetricsRepository.Verify(x => x.GetSummaryTrendsAsync(repositoryId, days), Times.Once);
     }
 
     [Fact]
-    public async Task GetRepositoryTrends_WithNoData_ReturnsNoDataMessage()
+    public async Task GetRepositoryTrends_WithNoData_ReturnsEmptyResult()
     {
         // Arrange
         var repositoryId = 1;
-        _mockMetricsRepository.Setup(x => x.GetTrendDataAsync(repositoryId, It.IsAny<int>()))
+        var days = 30;
+        
+        _mockMetricsRepository
+            .Setup(x => x.GetTrendDataAsync(repositoryId, days))
             .ReturnsAsync(new List<RepositoryMetrics>());
-        _mockMetricsRepository.Setup(x => x.GetSummaryTrendsAsync(repositoryId, It.IsAny<int>()))
+
+        _mockMetricsRepository
+            .Setup(x => x.GetSummaryTrendsAsync(repositoryId, days))
             .ReturnsAsync(new Dictionary<string, object>());
 
         // Act
-        var result = await _controller.GetRepositoryTrends(repositoryId, 30);
+        var result = await _controller.GetRepositoryTrends(repositoryId, days);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = result as OkObjectResult;
-        Assert.NotNull(okResult?.Value);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
     }
 
     [Fact]
-    public async Task GetAnalyticsSummary_WithData_ReturnsAggregatedMetrics()
+    public async Task GetLanguageTrends_WithValidData_ReturnsLanguageDistribution()
     {
         // Arrange
-        var mockMetrics = CreateMockMetricsList();
-        _mockMetricsRepository.Setup(x => x.GetAllLatestMetricsAsync())
-            .ReturnsAsync(mockMetrics);
+        var repositoryId = 1;
+        var days = 30;
+        var languageJson = """{"C#": 60, "TypeScript": 25, "JavaScript": 15}""";
+        
+        var mockTrendData = new List<RepositoryMetrics>
+        {
+            new RepositoryMetrics
+            {
+                Id = 1,
+                RepositoryId = repositoryId,
+                MeasurementDate = DateTime.UtcNow.AddDays(-5),
+                LanguageDistribution = languageJson
+            }
+        };
+
+        _mockMetricsRepository
+            .Setup(x => x.GetTrendDataAsync(repositoryId, days))
+            .ReturnsAsync(mockTrendData);
+
+        // Act
+        var result = await _controller.GetLanguageTrends(repositoryId, days);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
+        
+        _mockMetricsRepository.Verify(x => x.GetTrendDataAsync(repositoryId, days), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAnalyticsSummary_WithMetrics_ReturnsAggregatedData()
+    {
+        // Arrange
+        var mockLatestMetrics = new List<RepositoryMetrics>
+        {
+            new RepositoryMetrics
+            {
+                Id = 1,
+                RepositoryId = 1,
+                MaintainabilityIndex = 85.0,
+                LineCoveragePercentage = 75.0,
+                DocumentationCoverage = 80.0,
+                AverageCyclomaticComplexity = 2.0,
+                TechnicalDebtHours = 10.5,
+                BuildSuccessRate = 95.0,
+                SecurityVulnerabilities = 1,
+                BusFactor = 3.0,
+                TotalLinesOfCode = 5000,
+                TotalFiles = 150,
+                CommitsLastMonth = 25,
+                ActiveContributors = 3,
+                MeasurementDate = DateTime.UtcNow
+            },
+            new RepositoryMetrics
+            {
+                Id = 2,
+                RepositoryId = 2,
+                MaintainabilityIndex = 80.0,
+                LineCoveragePercentage = 80.0,
+                DocumentationCoverage = 75.0,
+                AverageCyclomaticComplexity = 2.5,
+                TechnicalDebtHours = 8.0,
+                BuildSuccessRate = 90.0,
+                SecurityVulnerabilities = 2,
+                BusFactor = 2.0,
+                TotalLinesOfCode = 3000,
+                TotalFiles = 100,
+                CommitsLastMonth = 15,
+                ActiveContributors = 2,
+                MeasurementDate = DateTime.UtcNow.AddHours(-1)
+            }
+        };
+
+        _mockMetricsRepository
+            .Setup(x => x.GetAllLatestMetricsAsync())
+            .ReturnsAsync(mockLatestMetrics);
 
         // Act
         var result = await _controller.GetAnalyticsSummary();
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = result as OkObjectResult;
-        Assert.NotNull(okResult?.Value);
-
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
+        
         _mockMetricsRepository.Verify(x => x.GetAllLatestMetricsAsync(), Times.Once);
     }
 
     [Fact]
-    public async Task GetAnalyticsSummary_WithNoData_ReturnsNoMetricsMessage()
+    public async Task GetAnalyticsSummary_WithNoMetrics_ReturnsEmptyMessage()
     {
         // Arrange
-        _mockMetricsRepository.Setup(x => x.GetAllLatestMetricsAsync())
+        _mockMetricsRepository
+            .Setup(x => x.GetAllLatestMetricsAsync())
             .ReturnsAsync(new List<RepositoryMetrics>());
 
         // Act
         var result = await _controller.GetAnalyticsSummary();
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = result as OkObjectResult;
-        Assert.NotNull(okResult?.Value);
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
     }
 
     [Fact]
-    public async Task GetActivityPatterns_WithValidData_ReturnsPatterns()
+    public async Task GetActivityPatterns_WithValidData_ReturnsActivityData()
     {
         // Arrange
         var repositoryId = 1;
-        var mockMetrics = CreateMockMetrics();
-        _mockMetricsRepository.Setup(x => x.GetLatestMetricsAsync(repositoryId))
+        var hourlyJson = """{"09": 10, "10": 15, "11": 20, "14": 25}""";
+        var dailyJson = """{"Monday": 30, "Tuesday": 25, "Wednesday": 35, "Thursday": 20, "Friday": 15}""";
+        
+        var mockMetrics = new RepositoryMetrics
+        {
+            Id = 1,
+            RepositoryId = repositoryId,
+            HourlyActivityPattern = hourlyJson,
+            DailyActivityPattern = dailyJson,
+            MeasurementDate = DateTime.UtcNow
+        };
+
+        _mockMetricsRepository
+            .Setup(x => x.GetLatestMetricsAsync(repositoryId))
             .ReturnsAsync(mockMetrics);
 
         // Act
         var result = await _controller.GetActivityPatterns(repositoryId);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
-        var okResult = result as OkObjectResult;
-        Assert.NotNull(okResult?.Value);
-
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(okResult.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
+        
         _mockMetricsRepository.Verify(x => x.GetLatestMetricsAsync(repositoryId), Times.Once);
     }
 
     [Fact]
-    public async Task GetActivityPatterns_WithNoData_ReturnsNotFound()
+    public async Task GetActivityPatterns_WithNoMetrics_ReturnsNotFound()
     {
         // Arrange
         var repositoryId = 1;
-        _mockMetricsRepository.Setup(x => x.GetLatestMetricsAsync(repositoryId))
+        
+        _mockMetricsRepository
+            .Setup(x => x.GetLatestMetricsAsync(repositoryId))
             .ReturnsAsync((RepositoryMetrics?)null);
 
         // Act
         var result = await _controller.GetActivityPatterns(repositoryId);
 
         // Assert
-        Assert.IsType<NotFoundObjectResult>(result);
-    }
-
-    private List<RepositoryMetrics> CreateMockMetricsList()
-    {
-        return new List<RepositoryMetrics>
-        {
-            CreateMockMetrics(1, DateTime.UtcNow.AddDays(-2)),
-            CreateMockMetrics(2, DateTime.UtcNow.AddDays(-1)),
-            CreateMockMetrics(3, DateTime.UtcNow)
-        };
-    }
-
-    private RepositoryMetrics CreateMockMetrics(int id = 1, DateTime? measurementDate = null)
-    {
-        return new RepositoryMetrics
-        {
-            Id = id,
-            RepositoryId = 1,
-            MeasurementDate = measurementDate ?? DateTime.UtcNow,
-            TotalFiles = 100 + id * 5,
-            CommitsLastMonth = 50 + id * 2,
-            ActiveContributors = 3 + id,
-            TotalLinesOfCode = 5000 + id * 100,
-            LineCoveragePercentage = 75.5 + id,
-            TechnicalDebtHours = 8.5 - id * 0.5,
-            DevelopmentVelocity = 15.5 + id,
-            RepositorySizeBytes = 1024000 + id * 50000,
-            HourlyActivityPattern = "{\"0\":0,\"1\":0,\"2\":0,\"3\":0,\"4\":0,\"5\":0,\"6\":0,\"7\":1,\"8\":5,\"9\":10,\"10\":15,\"11\":12,\"12\":8,\"13\":10,\"14\":15,\"15\":20,\"16\":18,\"17\":12,\"18\":5,\"19\":3,\"20\":1,\"21\":0,\"22\":0,\"23\":0}",
-            DailyActivityPattern = "{\"Sunday\":5,\"Monday\":25,\"Tuesday\":30,\"Wednesday\":28,\"Thursday\":26,\"Friday\":22,\"Saturday\":8}",
-            LanguageDistribution = "{\"C#\":45,\"TypeScript\":25,\"JavaScript\":15,\"CSS\":10,\"HTML\":5}"
-        };
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+        var response = Assert.IsType<ApiResponse<object>>(notFoundResult.Value);
+        Assert.False(response.Success);
+        
+        _mockMetricsRepository.Verify(x => x.GetLatestMetricsAsync(repositoryId), Times.Once);
     }
 }

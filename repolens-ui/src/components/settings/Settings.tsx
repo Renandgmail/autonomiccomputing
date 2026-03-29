@@ -4,7 +4,6 @@ import {
   Typography,
   Card,
   CardContent,
-  Grid2 as Grid,
   TextField,
   Switch,
   FormControlLabel,
@@ -137,284 +136,299 @@ const Settings: React.FC = () => {
         Manage your account settings and preferences
       </Typography>
 
-      <Grid container spacing={3}>
-        {/* Profile Settings */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Person sx={{ mr: 2, color: 'primary.main' }} />
-                <Typography variant="h6">Profile Settings</Typography>
-                <Box sx={{ flexGrow: 1 }} />
-                <IconButton onClick={() => setIsEditing(!isEditing)}>
-                  <Edit />
-                </IconButton>
-              </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {/* First Row - Profile and Preferences */}
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 3, 
+          flexDirection: { xs: 'column', md: 'row' }
+        }}>
+          {/* Profile Settings */}
+          <Box sx={{ flex: 1 }}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Person sx={{ mr: 2, color: 'primary.main' }} />
+                  <Typography variant="h6">Profile Settings</Typography>
+                  <Box sx={{ flexGrow: 1 }} />
+                  <IconButton onClick={() => setIsEditing(!isEditing)}>
+                    <Edit />
+                  </IconButton>
+                </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar 
-                  sx={{ width: 80, height: 80, mr: 3 }}
-                  src={settings.profile.avatar}
-                >
-                  {settings.profile.firstName[0]}{settings.profile.lastName[0]}
-                </Avatar>
-                <Box>
-                  <Typography variant="h6">
-                    {settings.profile.firstName} {settings.profile.lastName}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {settings.profile.email}
-                  </Typography>
-                  <Chip 
-                    label="Verified" 
-                    color="success" 
-                    size="small" 
-                    sx={{ mt: 1 }} 
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Avatar 
+                    sx={{ width: 80, height: 80, mr: 3 }}
+                    src={settings.profile.avatar}
+                  >
+                    {settings.profile.firstName[0]}{settings.profile.lastName[0]}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6">
+                      {settings.profile.firstName} {settings.profile.lastName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {settings.profile.email}
+                    </Typography>
+                    <Chip 
+                      label="Verified" 
+                      color="success" 
+                      size="small" 
+                      sx={{ mt: 1 }} 
+                    />
+                  </Box>
+                </Box>
+
+                <Stack spacing={2}>
+                  <TextField
+                    label="First Name"
+                    value={settings.profile.firstName}
+                    onChange={(e) => handleProfileChange('firstName', e.target.value)}
+                    disabled={!isEditing}
+                    fullWidth
                   />
-                </Box>
-              </Box>
+                  <TextField
+                    label="Last Name"
+                    value={settings.profile.lastName}
+                    onChange={(e) => handleProfileChange('lastName', e.target.value)}
+                    disabled={!isEditing}
+                    fullWidth
+                  />
+                  <TextField
+                    label="Email"
+                    value={settings.profile.email}
+                    onChange={(e) => handleProfileChange('email', e.target.value)}
+                    disabled={!isEditing}
+                    fullWidth
+                    type="email"
+                  />
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
 
-              <Stack spacing={2}>
-                <TextField
-                  label="First Name"
-                  value={settings.profile.firstName}
-                  onChange={(e) => handleProfileChange('firstName', e.target.value)}
-                  disabled={!isEditing}
-                  fullWidth
-                />
-                <TextField
-                  label="Last Name"
-                  value={settings.profile.lastName}
-                  onChange={(e) => handleProfileChange('lastName', e.target.value)}
-                  disabled={!isEditing}
-                  fullWidth
-                />
-                <TextField
-                  label="Email"
-                  value={settings.profile.email}
-                  onChange={(e) => handleProfileChange('email', e.target.value)}
-                  disabled={!isEditing}
-                  fullWidth
-                  type="email"
-                />
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Preferences */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Palette sx={{ mr: 2, color: 'primary.main' }} />
-                <Typography variant="h6">Preferences</Typography>
-              </Box>
-
-              <Stack spacing={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Theme</InputLabel>
-                  <Select
-                    value={settings.preferences.theme}
-                    onChange={(e) => handlePreferenceChange('theme', e.target.value)}
-                    label="Theme"
-                  >
-                    <MenuItem value="light">Light</MenuItem>
-                    <MenuItem value="dark">Dark</MenuItem>
-                    <MenuItem value="auto">Auto (System)</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <FormControl fullWidth>
-                  <InputLabel>Language</InputLabel>
-                  <Select
-                    value={settings.preferences.language}
-                    onChange={(e) => handlePreferenceChange('language', e.target.value)}
-                    label="Language"
-                  >
-                    <MenuItem value="en">English</MenuItem>
-                    <MenuItem value="es">Español</MenuItem>
-                    <MenuItem value="fr">Français</MenuItem>
-                    <MenuItem value="de">Deutsch</MenuItem>
-                  </Select>
-                </FormControl>
-
-                <TextField
-                  label="Dashboard Refresh Interval (seconds)"
-                  type="number"
-                  value={settings.preferences.dashboardRefreshInterval}
-                  onChange={(e) => handlePreferenceChange('dashboardRefreshInterval', parseInt(e.target.value))}
-                  fullWidth
-                  inputProps={{ min: 10, max: 300 }}
-                />
-
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.preferences.emailNotifications}
-                      onChange={(e) => handlePreferenceChange('emailNotifications', e.target.checked)}
-                    />
-                  }
-                  label="Email Notifications"
-                />
-
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.preferences.pushNotifications}
-                      onChange={(e) => handlePreferenceChange('pushNotifications', e.target.checked)}
-                    />
-                  }
-                  label="Push Notifications"
-                />
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* GitHub Integration */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <GitHub sx={{ mr: 2, color: 'primary.main' }} />
-                <Typography variant="h6">GitHub Integration</Typography>
-              </Box>
-
-              {settings.github.token ? (
-                <Box>
-                  <Alert severity="success" sx={{ mb: 2 }}>
-                    GitHub account connected successfully!
-                  </Alert>
-                  <Typography variant="body2" color="text.secondary">
-                    Connected as: <strong>@{settings.github.username}</strong>
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Connected: {settings.github.connectedAt}
-                  </Typography>
-                  <Button 
-                    variant="outlined" 
-                    color="error" 
-                    sx={{ mt: 2 }}
-                    startIcon={<Delete />}
-                  >
-                    Disconnect GitHub
-                  </Button>
-                </Box>
-              ) : (
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Connect your GitHub account to access private repositories and increase API rate limits.
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<Add />}
-                    onClick={() => {
-                      // TODO: Implement GitHub OAuth flow
-                      console.log('Connect GitHub clicked');
-                    }}
-                  >
-                    Connect GitHub
-                  </Button>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Security Settings */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Security sx={{ mr: 2, color: 'primary.main' }} />
-                <Typography variant="h6">Security</Typography>
-              </Box>
-
-              <Stack spacing={3}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={settings.security.twoFactorEnabled}
-                      onChange={(e) => handleSecurityToggle('twoFactorEnabled', e.target.checked)}
-                    />
-                  }
-                  label="Two-Factor Authentication"
-                />
-
-                <Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Active Sessions: {settings.security.activeSessions}
-                  </Typography>
-                  <Button variant="outlined" size="small" sx={{ mt: 1 }}>
-                    View All Sessions
-                  </Button>
+          {/* Preferences */}
+          <Box sx={{ flex: 1 }}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Palette sx={{ mr: 2, color: 'primary.main' }} />
+                  <Typography variant="h6">Preferences</Typography>
                 </Box>
 
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    Password last changed: {settings.security.lastPasswordChange || 'Never'}
-                  </Typography>
-                  <Button variant="outlined" size="small">
-                    Change Password
-                  </Button>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
+                <Stack spacing={3}>
+                  <FormControl fullWidth>
+                    <InputLabel>Theme</InputLabel>
+                    <Select
+                      value={settings.preferences.theme}
+                      onChange={(e) => handlePreferenceChange('theme', e.target.value)}
+                      label="Theme"
+                    >
+                      <MenuItem value="light">Light</MenuItem>
+                      <MenuItem value="dark">Dark</MenuItem>
+                      <MenuItem value="auto">Auto (System)</MenuItem>
+                    </Select>
+                  </FormControl>
 
-        {/* Activity & Data */}
-        <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Language</InputLabel>
+                    <Select
+                      value={settings.preferences.language}
+                      onChange={(e) => handlePreferenceChange('language', e.target.value)}
+                      label="Language"
+                    >
+                      <MenuItem value="en">English</MenuItem>
+                      <MenuItem value="es">Español</MenuItem>
+                      <MenuItem value="fr">Français</MenuItem>
+                      <MenuItem value="de">Deutsch</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <TextField
+                    label="Dashboard Refresh Interval (seconds)"
+                    type="number"
+                    value={settings.preferences.dashboardRefreshInterval}
+                    onChange={(e) => handlePreferenceChange('dashboardRefreshInterval', parseInt(e.target.value))}
+                    fullWidth
+                    inputProps={{ min: 10, max: 300 }}
+                  />
+
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={settings.preferences.emailNotifications}
+                        onChange={(e) => handlePreferenceChange('emailNotifications', e.target.checked)}
+                      />
+                    }
+                    label="Email Notifications"
+                  />
+
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={settings.preferences.pushNotifications}
+                        onChange={(e) => handlePreferenceChange('pushNotifications', e.target.checked)}
+                      />
+                    }
+                    label="Push Notifications"
+                  />
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* Second Row - GitHub and Security */}
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 3, 
+          flexDirection: { xs: 'column', md: 'row' }
+        }}>
+          {/* GitHub Integration */}
+          <Box sx={{ flex: 1 }}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <GitHub sx={{ mr: 2, color: 'primary.main' }} />
+                  <Typography variant="h6">GitHub Integration</Typography>
+                </Box>
+
+                {settings.github.token ? (
+                  <Box>
+                    <Alert severity="success" sx={{ mb: 2 }}>
+                      GitHub account connected successfully!
+                    </Alert>
+                    <Typography variant="body2" color="text.secondary">
+                      Connected as: <strong>@{settings.github.username}</strong>
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Connected: {settings.github.connectedAt}
+                    </Typography>
+                    <Button 
+                      variant="outlined" 
+                      color="error" 
+                      sx={{ mt: 2 }}
+                      startIcon={<Delete />}
+                    >
+                      Disconnect GitHub
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Connect your GitHub account to access private repositories and increase API rate limits.
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      startIcon={<Add />}
+                      onClick={() => {
+                        // TODO: Implement GitHub OAuth flow
+                        console.log('Connect GitHub clicked');
+                      }}
+                    >
+                      Connect GitHub
+                    </Button>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
+          </Box>
+
+          {/* Security Settings */}
+          <Box sx={{ flex: 1 }}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Security sx={{ mr: 2, color: 'primary.main' }} />
+                  <Typography variant="h6">Security</Typography>
+                </Box>
+
+                <Stack spacing={3}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={settings.security.twoFactorEnabled}
+                        onChange={(e) => handleSecurityToggle('twoFactorEnabled', e.target.checked)}
+                      />
+                    }
+                    label="Two-Factor Authentication"
+                  />
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Active Sessions: {settings.security.activeSessions}
+                    </Typography>
+                    <Button variant="outlined" size="small" sx={{ mt: 1 }}>
+                      View All Sessions
+                    </Button>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      Password last changed: {settings.security.lastPasswordChange || 'Never'}
+                    </Typography>
+                    <Button variant="outlined" size="small">
+                      Change Password
+                    </Button>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
+
+        {/* Third Row - Activity & Data */}
+        <Box>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Account Activity & Data
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h4" color="primary.main">
-                      12
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Repositories Analyzed
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h4" color="primary.main">
-                      1,247
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      API Requests
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h4" color="primary.main">
-                      42
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Reports Generated
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Paper sx={{ p: 2, textAlign: 'center' }}>
-                    <Typography variant="h4" color="primary.main">
-                      7d
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Account Age
-                    </Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
+              <Box sx={{ 
+                display: 'grid',
+                gridTemplateColumns: { 
+                  xs: '1fr', 
+                  sm: '1fr 1fr', 
+                  md: '1fr 1fr 1fr 1fr' 
+                },
+                gap: 2,
+                mb: 3
+              }}>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="h4" color="primary.main">
+                    12
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Repositories Analyzed
+                  </Typography>
+                </Paper>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="h4" color="primary.main">
+                    1,247
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    API Requests
+                  </Typography>
+                </Paper>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="h4" color="primary.main">
+                    42
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Reports Generated
+                  </Typography>
+                </Paper>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                  <Typography variant="h4" color="primary.main">
+                    7d
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Account Age
+                  </Typography>
+                </Paper>
+              </Box>
 
-              <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+              <Box sx={{ display: 'flex', gap: 2 }}>
                 <Button variant="outlined">
                   Export Data
                 </Button>
@@ -424,8 +438,8 @@ const Settings: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Save Button */}
       {isEditing && (

@@ -33,8 +33,8 @@ public class LocalProviderServiceTests
         // Setup default configuration behavior
         _mockConfiguration.Setup(c => c.GetSection("LocalRepositories:AllowedPaths"))
                          .Returns(_mockSection.Object);
-        _mockSection.Setup(s => s.Get<string[]>())
-                   .Returns(Array.Empty<string>()); // Use defaults
+        // Instead of using Get<string[]>(), set up the configuration to return values directly
+        _mockSection.Setup(s => s.Value).Returns((string?)null);
         
         _service = new LocalProviderService(_mockLogger.Object, _mockConfiguration.Object);
     }
@@ -337,10 +337,15 @@ public class LocalProviderServiceTests
     public void GetAllowedPaths_WithCustomConfiguration_ShouldUseConfiguredPaths()
     {
         // Arrange
+        var mockCustomConfig = new Mock<IConfiguration>();
+        var mockCustomSection = new Mock<IConfigurationSection>();
         var customPaths = new[] { @"C:\custom\path1", @"C:\custom\path2" };
-        _mockSection.Setup(s => s.Get<string[]>()).Returns(customPaths);
         
-        var customService = new LocalProviderService(_mockLogger.Object, _mockConfiguration.Object);
+        mockCustomConfig.Setup(c => c.GetSection("LocalRepositories:AllowedPaths"))
+                        .Returns(mockCustomSection.Object);
+        mockCustomSection.Setup(s => s.Value).Returns(string.Join(";", customPaths));
+        
+        var customService = new LocalProviderService(_mockLogger.Object, mockCustomConfig.Object);
 
         // Act - Test by trying paths that would be denied by defaults but allowed by custom config
         var result1 = customService.CanHandle(@"C:\custom\path1\repo");
@@ -419,7 +424,7 @@ public class LocalProviderServiceTests
 
     private void SetupAllowedPath(string path)
     {
-        _mockSection.Setup(s => s.Get<string[]>()).Returns(new[] { path });
+        _mockSection.Setup(s => s.Value).Returns(path);
     }
 
     #endregion
@@ -448,7 +453,7 @@ public class LocalProviderServicePerformanceTests
         
         mockConfig.Setup(c => c.GetSection("LocalRepositories:AllowedPaths"))
                   .Returns(mockSection.Object);
-        mockSection.Setup(s => s.Get<string[]>()).Returns(Array.Empty<string>());
+        mockSection.Setup(s => s.Value).Returns((string?)null);
         
         var service = new LocalProviderService(mockLogger.Object, mockConfig.Object);
 
@@ -500,8 +505,7 @@ public class LocalProviderServicePerformanceTests
         var currentDir = Directory.GetCurrentDirectory();
         mockConfig.Setup(c => c.GetSection("LocalRepositories:AllowedPaths"))
                   .Returns(mockSection.Object);
-        mockSection.Setup(s => s.Get<string[]>())
-                   .Returns(new[] { currentDir });
+        mockSection.Setup(s => s.Value).Returns(currentDir);
         
         var service = new LocalProviderService(mockLogger.Object, mockConfig.Object);
 

@@ -759,22 +759,35 @@ public class AnalyticsController : ControllerBase
         {
             _logger.LogInformation("Getting code graph for {RepositoryId}", repositoryId);
 
-            // This would require AST analysis and graph construction
-            // For now, return a placeholder structure
+            // Get file metrics to build a basic structure graph
+            var fileMetrics = await _fileMetricsRepository.GetRepositoryFileMetricsAsync(repositoryId);
+            
+            if (!fileMetrics.Any())
+            {
+                return Ok(ApiResponse<object>.SuccessResult(new
+                {
+                    repositoryId,
+                    message = "No file analysis available yet - run repository analysis first",
+                    nodes = new List<object>(),
+                    edges = new List<object>(),
+                    metadata = new { totalNodes = 0, totalEdges = 0 }
+                }));
+            }
+
+            var (nodes, edges) = GenerateBasicCodeGraph(fileMetrics.ToList());
+
             return Ok(ApiResponse<object>.SuccessResult(new
             {
                 repositoryId,
-                message = "Code graph analysis requires AST analysis and graph construction to be enabled",
-                nodes = new List<object>(),
-                edges = new List<object>(),
+                nodes,
+                edges,
                 metadata = new
                 {
-                    totalNodes = 0,
-                    totalEdges = 0,
-                    maxDepth = 0,
-                    entryPoints = new List<string>(),
-                    orphanNodes = new List<string>(),
-                    circularDependencies = new List<List<string>>()
+                    totalNodes = nodes.Count,
+                    totalEdges = edges.Count,
+                    analysisLevel = "Basic Structure",
+                    languages = fileMetrics.Select(f => f.PrimaryLanguage).Distinct().ToList(),
+                    lastUpdated = fileMetrics.Max(f => f.LastAnalyzed)
                 }
             }));
         }
@@ -783,6 +796,123 @@ public class AnalyticsController : ControllerBase
             _logger.LogError(ex, "Failed to get code graph for {RepositoryId}", repositoryId);
             return StatusCode(500, ApiResponse<object>.ErrorResult("Failed to retrieve code graph"));
         }
+    }
+
+    private static (List<object> nodes, List<object> edges) GenerateBasicCodeGraph(List<Core.Entities.FileMetrics> fileMetrics)
+    {
+        var nodes = new List<object>();
+        var edges = new List<object>();
+        var nodeId = 0;
+        var fileToNodeId = new Dictionary<string, int>();
+
+        // Create directory nodes
+        var directories = fileMetrics
+            .Select(f => Path.GetDirectoryName(f.FilePath) ?? "")
+            .Where(d => !string.IsNullOrEmpty(d))
+            .Distinct()
+            .ToList();
+
+        foreach (var dir in directories.Take(20)) // Limit for performance
+        {
+            var dirNodeId = nodeId++;
+            fileToNodeId[dir] = dirNodeId;
+            
+            nodes.Add(new
+            {
+                id = dirNodeId,
+                label = Path.GetFileName(dir) ?? dir,
+                type = "directory",
+                fullPath = dir,
+                color = "#4CAF50",
+                size = Math.Min(fileMetrics.Count(f => f.FilePath.StartsWith(dir)) * 2 + 10, 30)
+            });
+        }
+
+        // Create file nodes for important files (high complexity, low quality, or frequently changed)
+        var importantFiles = fileMetrics
+            .Where(f => f.CyclomaticComplexity > 5 || f.QualityScore < 60 || f.ChurnRate > 0.3)
+            .Take(30) // Limit for performance
+            .ToList();
+
+        foreach (var file in importantFiles)
+        {
+            var fileNodeId = nodeId++;
+            fileToNodeId[file.FilePath] = fileNodeId;
+            
+            var nodeColor = file.QualityScore switch
+            {
+                < 30 => "#F44336", // Red for poor quality
+                < 60 => "#FF9800", // Orange for medium quality
+                _ => "#2196F3"     // Blue for good quality
+            };
+
+            nodes.Add(new
+            {
+                id = fileNodeId,
+                label = Path.GetFileName(file.FilePath),
+                type = "file",
+                language = file.PrimaryLanguage,
+                fullPath = file.FilePath,
+                color = nodeColor,
+                size = Math.Min((int)(file.CyclomaticComplexity * 2 + 5), 25),
+                metrics = new
+                {
+                    complexity = Math.Round(file.CyclomaticComplexity, 1),
+                    quality = Math.Round(file.QualityScore, 1),
+                    debt = Math.Round(file.TechnicalDebtMinutes / 60.0, 1),
+                    lines = file.LineCount
+                }
+            });
+
+            // Create edges from directory to file
+            var fileDir = Path.GetDirectoryName(file.FilePath);
+            if (!string.IsNullOrEmpty(fileDir) && fileToNodeId.ContainsKey(fileDir))
+            {
+                edges.Add(new
+                {
+                    from = fileToNodeId[fileDir],
+                    to = fileNodeId,
+                    type = "contains",
+                    label = "",
+                    color = "#CCCCCC"
+                });
+            }
+        }
+
+        // Create edges between files in same directory (simplified relationships)
+        var filesByDirectory = importantFiles.GroupBy(f => Path.GetDirectoryName(f.FilePath) ?? "");
+        
+        foreach (var dirGroup in filesByDirectory.Where(g => g.Count() > 1))
+        {
+            var filesInDir = dirGroup.ToList();
+            for (int i = 0; i < filesInDir.Count - 1 && edges.Count < 100; i++)
+            {
+                for (int j = i + 1; j < filesInDir.Count && edges.Count < 100; j++)
+                {
+                    var file1 = filesInDir[i];
+                    var file2 = filesInDir[j];
+                    
+                    // Create relationship if both are same language or one has high complexity
+                    if (file1.PrimaryLanguage == file2.PrimaryLanguage || 
+                        file1.CyclomaticComplexity > 8 || file2.CyclomaticComplexity > 8)
+                    {
+                        if (fileToNodeId.ContainsKey(file1.FilePath) && fileToNodeId.ContainsKey(file2.FilePath))
+                        {
+                            edges.Add(new
+                            {
+                                from = fileToNodeId[file1.FilePath],
+                                to = fileToNodeId[file2.FilePath],
+                                type = "related",
+                                label = "same module",
+                                color = "#999999"
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        return (nodes, edges);
     }
 
     private static double CalculateHotspotScore(Core.Entities.FileMetrics fileMetric)
