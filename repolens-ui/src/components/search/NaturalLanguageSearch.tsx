@@ -141,7 +141,7 @@ export const NaturalLanguageSearch: React.FC<Props> = ({
     }
   }, [repositoryId]);
 
-  // Debounced suggestions
+  // Debounced suggestions using apiService
   const debouncedGetSuggestions = useCallback(
     debounce(async (partialQuery: string) => {
       if (partialQuery.length < 2) {
@@ -151,21 +151,8 @@ export const NaturalLanguageSearch: React.FC<Props> = ({
 
       setIsLoadingSuggestions(true);
       try {
-        // Use raw axios call since apiService doesn't have these endpoints yet
-        const response = await fetch(`${window.location.origin}/api/search/suggestions?partialQuery=${encodeURIComponent(partialQuery)}${repositoryId ? `&repositoryId=${repositoryId}` : ''}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('repolens_token')}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setSuggestions(data.data.suggestions || []);
-          }
-        }
+        const result = await apiService.getSearchSuggestions(partialQuery, repositoryId, 10);
+        setSuggestions(result.suggestions || []);
       } catch (error) {
         console.warn('Failed to load suggestions:', error);
         setSuggestions([]);
@@ -188,19 +175,8 @@ export const NaturalLanguageSearch: React.FC<Props> = ({
     if (!repositoryId) return;
 
     try {
-      const response = await fetch(`${window.location.origin}/api/search/filters/${repositoryId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('repolens_token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setFilters(data.data.filters);
-        }
-      }
+      const result = await apiService.getSearchFilters(repositoryId);
+      setFilters(result.filters);
     } catch (error) {
       console.warn('Failed to load filters:', error);
     }
@@ -208,19 +184,8 @@ export const NaturalLanguageSearch: React.FC<Props> = ({
 
   const loadExamples = async () => {
     try {
-      const response = await fetch(`${window.location.origin}/api/search/examples`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('repolens_token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setExamples(data.data);
-        }
-      }
+      const result = await apiService.getExampleQueries();
+      setExamples(result);
     } catch (error) {
       console.warn('Failed to load examples:', error);
     }
@@ -233,42 +198,13 @@ export const NaturalLanguageSearch: React.FC<Props> = ({
     setError(null);
 
     try {
-      const response = await fetch(`${window.location.origin}/api/search/query`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('repolens_token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          query: searchQuery,
-          repositoryId,
-          maxResults: 50
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success) {
-          const data: SearchResponse = result.data;
-          setResults(data.results);
-          setIntent(data.intent);
-          setSummary(data.summary);
-          setSuggestions(data.suggestions);
-        } else {
-          setError(result.message || 'Search failed');
-          setResults([]);
-          setIntent(null);
-          setSummary(null);
-        }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Search failed');
-        setResults([]);
-        setIntent(null);
-        setSummary(null);
-      }
+      const result = await apiService.processNaturalLanguageQuery(searchQuery, repositoryId, 50);
+      setResults(result.results);
+      setIntent(result.intent);
+      setSummary(result.summary);
+      setSuggestions(result.suggestions);
     } catch (error: any) {
-      setError('Failed to execute search');
+      setError(error.message || 'Failed to execute search');
       setResults([]);
       setIntent(null);
       setSummary(null);

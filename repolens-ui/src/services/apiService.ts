@@ -711,7 +711,25 @@ class ApiService {
     };
   }
 
-  // Advanced Search API methods (utilizing unused backend methods)
+  // Natural Language Search API methods (utilizing sophisticated search backend)
+  async processNaturalLanguageQuery(query: string, repositoryId?: number, maxResults?: number): Promise<any> {
+    const response = await this.api.post<ApiResponse<any>>('/api/search/query', {
+      query,
+      repositoryId,
+      maxResults
+    });
+    return this.handleResponse(response);
+  }
+
+  async getSearchSuggestions(query: string, repositoryId?: number, limit?: number): Promise<any> {
+    const params = new URLSearchParams({ q: query });
+    if (repositoryId) params.append('repositoryId', repositoryId.toString());
+    if (limit) params.append('limit', limit.toString());
+    
+    const response = await this.api.get<ApiResponse<any>>(`/api/search/suggestions?${params}`);
+    return this.handleResponse(response);
+  }
+
   async getSearchFilters(repositoryId: number): Promise<any> {
     const response = await this.api.get<ApiResponse<any>>(`/api/search/filters/${repositoryId}`);
     return this.handleResponse(response);
@@ -725,6 +743,29 @@ class ApiService {
   async getExampleQueries(): Promise<any> {
     const response = await this.api.get<ApiResponse<any>>('/api/search/examples');
     return this.handleResponse(response);
+  }
+
+  // Enhanced search functionality with intent processing
+  async performIntelligentSearch(query: string, repositoryId?: number): Promise<any> {
+    this.log('🔍 Starting intelligent search', { query, repositoryId });
+    
+    try {
+      // Parallel processing: intent analysis + search execution
+      const [intentResult, searchResult] = await Promise.all([
+        this.analyzeQueryIntent(query),
+        this.processNaturalLanguageQuery(query, repositoryId)
+      ]);
+
+      return {
+        ...searchResult,
+        enhancedIntent: intentResult,
+        searchType: 'intelligent',
+        timestamp: new Date().toISOString()
+      };
+    } catch (error: any) {
+      this.logError('❌ Intelligent search failed', { query, error: error.message });
+      throw error;
+    }
   }
 
   // System Health & Monitoring API methods (utilizing unused backend methods)
