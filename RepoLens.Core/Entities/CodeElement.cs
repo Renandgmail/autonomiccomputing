@@ -33,6 +33,11 @@ public class CodeElement
     public string? Parameters { get; set; } // JSON as TEXT for PostgreSQL
     public string? Documentation { get; set; }
     public int? Complexity { get; set; }
+    
+    // Additional properties for search and analysis
+    public string? File { get; set; } // File path for search results
+    public string? FullContent { get; set; } // Full content for analysis
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
     // Navigation properties

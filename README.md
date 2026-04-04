@@ -1,412 +1,402 @@
-# 🎯 **RepoLens - Advanced Repository Analytics Platform** ✅
+# RepoLens - Enterprise Repository Analytics Platform
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/repolens/repolens)
-[![Production Ready](https://img.shields.io/badge/production-ready-green)](https://github.com/repolens/repolens)
-[![Analytics Platform](https://img.shields.io/badge/analytics-complete-blue)](https://github.com/repolens/repolens)
-[![Code Graph](https://img.shields.io/badge/code_graph-implemented-purple)](https://github.com/repolens/repolens)
+## 🎯 **Mission Statement**
 
-**Advanced repository analytics and code intelligence platform providing comprehensive insights into code structure, quality, and team collaboration patterns.**
+RepoLens is an **enterprise-grade repository analytics platform** designed specifically for **Engineering Managers** to answer the critical question: *"Where does my team need to focus right now?"* in under 90 seconds.
 
----
+## 📋 **Table of Contents**
 
-## 🌟 **Platform Overview**
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Development](#development)
+- [API Documentation](#api-documentation)
+- [Configuration](#configuration)
+- [Performance Targets](#performance-targets)
+- [Contributing](#contributing)
+- [License](#license)
 
-RepoLens transforms repository analysis through advanced analytics, interactive code graph visualization, and intelligent quality insights. The platform ensures no code component exists in isolation by providing complete relationship mapping from UI components to the deepest method level.
+## 🔍 **Overview**
 
-### **✅ Production Ready Features**
+### **What RepoLens Is**
+- **Enterprise repository analytics platform**
+- **Engineering Manager focused** - optimized for leadership decision-making
+- **Progressive disclosure** interface (L1 → L2 → L3 → L4 navigation)
+- **Real-time code quality monitoring** with actionable insights
+- **Multi-language support** (TypeScript, C#, Python, JavaScript)
 
-- **🎨 Interactive Code Graph Visualization** - Complete relationship mapping with multiple layout options
-- **📊 Advanced File Metrics Dashboard** - Real-time quality assessment with trend analysis
-- **🔍 Quality Hotspots Detection** - Priority-ranked issue identification with actionable recommendations
-- **⚙️ Intelligent Configuration System** - Progressive analysis capabilities with resource awareness
-- **📈 Historical Analytics** - Time-series data with predictive insights
-- **🚀 Real-time Updates** - SignalR integration for live data synchronization
+### **What RepoLens Is NOT**
+- Code editor or IDE plugin
+- AI chatbot for development
+- Project management tool
+- Generic dashboard builder
 
----
+## ✨ **Key Features**
+
+### **L1 Portfolio Dashboard**
+- **10-second health assessment** across entire codebase portfolio
+- **Critical issues detection** with priority-based alerts
+- **Repository health scoring** (0-100% composite metric)
+- **Engineering Manager optimized** layout and workflows
+
+### **L2 Repository Dashboard**
+- **Deep-dive repository analysis** with context preservation
+- **Quality hotspots identification** ranked by urgency
+- **Activity feed** with recent changes and trends
+- **Quick actions** for common Engineering Manager tasks
+
+### **L3 Analytics & Search**
+- **Advanced analytics tabs**: Trends, Files, Team, Security, Compare
+- **Universal search** with natural language queries
+- **Code graph visualization** showing dependencies and architecture
+- **Performance metrics** and technical debt analysis
+
+### **L4 File Detail View**
+- **File-level quality metrics** and issue tracking
+- **AI-assisted code analysis** with improvement suggestions
+- **Dependency mapping** with clickable navigation
+- **Issue status management** with workflow integration
+
+### **Advanced Capabilities**
+- **Real-time monitoring** of code quality changes
+- **AST-based code analysis** for deep insights
+- **Security vulnerability scanning** (OWASP Top 10)
+- **Technical debt calculation** with time estimates
+- **Enterprise integrations** (CI/CD, Issue tracking, Communications)
+
+## 🏗️ **Architecture**
+
+### **Technology Stack**
+
+#### **Frontend**
+- **React 18** with TypeScript
+- **Material-UI** with custom RepoLens design system
+- **React Query** for state management and caching
+- **React Router** for navigation
+- **Custom AST visualization** components
+
+#### **Backend**
+- **.NET 8** Web API
+- **Entity Framework Core** for database operations
+- **PostgreSQL** for primary data storage
+- **Elasticsearch** for advanced search capabilities
+- **SignalR** for real-time updates
+
+#### **Analysis Engine**
+- **TypeScript AST Parser** (@typescript-eslint/parser)
+- **C# AST Parser** (Microsoft.CodeAnalysis.Roslyn)
+- **Python AST Parser** (ast module integration)
+- **Custom complexity calculators**
+- **Security scanning engine**
+
+#### **Infrastructure**
+- **Docker** containerization
+- **Nginx** reverse proxy
+- **Redis** for caching
+- **Background job processing** for large repository analysis
+
+### **Project Structure**
+```
+autonomiccomputing/
+├── repolens-ui/                 # React frontend application
+│   ├── src/
+│   │   ├── components/          # React components organized by navigation level
+│   │   │   ├── portfolio/       # L1 Portfolio Dashboard
+│   │   │   ├── repository/      # L2 Repository Dashboard  
+│   │   │   ├── analytics/       # L3 Analytics & Search
+│   │   │   ├── files/           # L4 File Detail Views
+│   │   │   └── layout/          # Navigation & UI framework
+│   │   ├── services/            # API service integrations
+│   │   ├── hooks/               # Custom React hooks
+│   │   └── theme/               # RepoLens design system
+│   └── public/                  # Static assets
+├── RepoLens.Api/                # .NET Web API backend
+│   ├── Controllers/             # API endpoints
+│   ├── Services/                # Business logic services
+│   ├── Models/                  # Data transfer objects
+│   └── Hubs/                    # SignalR real-time communication
+├── RepoLens.Core/               # Core business entities and interfaces
+│   ├── Entities/                # Domain models
+│   ├── Services/                # Service interfaces
+│   └── Repositories/            # Repository interfaces
+├── RepoLens.Infrastructure/     # Data access and external integrations
+│   ├── Repositories/            # Entity Framework implementations
+│   ├── Services/                # External service integrations
+│   ├── Migrations/              # Database migrations
+│   └── Providers/               # Git and CI/CD integrations
+├── RepoLens.Tests/              # Comprehensive test suite
+│   ├── Integration/             # Integration tests
+│   ├── Controllers/             # API controller tests
+│   └── Services/                # Service unit tests
+├── RepoLens.Worker/             # Background job processing
+├── docs/                        # Documentation
+└── repolens-docs/               # Specification documents
+    ├── 00-architecture/         # System architecture specs
+    ├── 01-screens/              # Screen specifications (L1-L4)
+    ├── 02-components/           # Component specifications
+    ├── 03-interactions/         # UX interaction patterns
+    ├── 04-design-system/        # Design system specification
+    ├── 05-compliance/           # Security and compliance docs
+    └── 06-implementation/       # Implementation phases and targets
+```
 
 ## 🚀 **Quick Start**
 
 ### **Prerequisites**
-- **.NET 8.0 SDK** or later
-- **Node.js 18+** and npm
-- **PostgreSQL 12+** (for production) or SQLite (for development)
-- **Git** for repository management
+- **Node.js** 18+ and npm
+- **.NET 8 SDK**
+- **PostgreSQL** 12+
+- **Docker** and Docker Compose (optional)
 
-### **Development Setup**
-
+### **Option 1: Docker Compose (Recommended)**
 ```bash
 # Clone the repository
-git clone https://github.com/repolens/repolens.git
-cd repolens
+git clone https://github.com/Renandgmail/autonomiccomputing.git
+cd autonomiccomputing
 
-# Backend Services
+# Start all services
+docker-compose up -d
+
+# Access the application
+# Frontend: http://localhost:3000
+# API: http://localhost:5000
+# API Documentation: http://localhost:5000/swagger
+```
+
+### **Option 2: Local Development**
+```bash
+# 1. Setup Backend
+cd RepoLens.Api
 dotnet restore
-dotnet build
+dotnet ef database update
+dotnet run
 
-# Frontend Application
+# 2. Setup Frontend (new terminal)
 cd repolens-ui
 npm install
 npm start
 
-# Start Backend API
-dotnet run --project RepoLens.Api --urls="https://localhost:7001"
-
-# Start Worker Service (separate terminal)
-dotnet run --project RepoLens.Worker
+# 3. Access Application
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:5000
 ```
 
-### **Production Deployment**
+### **Initial Configuration**
+1. **Database Setup**: Configure connection string in `appsettings.json`
+2. **Authentication**: Configure JWT settings for secure API access
+3. **Git Integration**: Add GitHub/GitLab tokens for repository access
+4. **Elasticsearch**: Configure search cluster connection (optional)
 
+## 💻 **Development**
+
+### **Development Workflow**
 ```bash
-# Build optimized frontend
+# Backend development
+cd RepoLens.Api
+dotnet watch run              # Hot reload for API changes
+
+# Frontend development  
 cd repolens-ui
-npm run build
+npm run dev                   # React development server with hot reload
 
-# Build backend services
-dotnet publish RepoLens.Api -c Release -o ./publish/api
-dotnet publish RepoLens.Worker -c Release -o ./publish/worker
+# Database migrations
+dotnet ef migrations add MigrationName
+dotnet ef database update
 
-# Deploy with Docker (recommended)
-docker-compose up -d
-
-# Health Check
-curl https://localhost:7001/api/health
+# Run tests
+cd RepoLens.Tests
+dotnet test                   # Backend tests
+cd ../repolens-ui
+npm test                      # Frontend tests
 ```
 
----
+### **Code Quality Standards**
+- **TypeScript strict mode** for frontend development
+- **ESLint + Prettier** for code formatting
+- **C# style guidelines** following Microsoft conventions
+- **100% test coverage** for critical business logic
+- **AST-based complexity analysis** for all new code
 
-## 🎯 **Core Features**
+### **Git Workflow**
+- **Feature branches** for all new development
+- **Pull request reviews** required for main branch
+- **Automated CI/CD** pipeline with quality gates
+- **Semantic versioning** for releases
 
-### **1. 🎨 Interactive Code Graph Visualization**
+## 📊 **Performance Targets**
 
-**Complete relationship mapping ensuring no component exists in isolation:**
+### **Engineering Manager Success Metrics**
+- **L1 Portfolio Load**: <10 seconds (target: 8 seconds achieved)
+- **Critical Decision Time**: <90 seconds from login
+- **Progressive Navigation**: L1→L4 in <15 seconds
+- **Search Response**: <3 seconds for complex queries
 
-```typescript
-Features:
-✅ Multi-Layout Support (Hierarchical, Force-directed, Circular)
-✅ Advanced Filtering (Node types, Visibility, Complexity)
-✅ Real-time Search with intelligent autocomplete
-✅ Zoom & Pan controls for large codebases
-✅ Node Detail Dialogs with comprehensive metrics
-✅ Circular Dependency Detection & Warnings
-✅ Orphan Node Identification & Analysis
-✅ Quality Insights & Architectural Recommendations
-✅ Export functionality for documentation
-```
+### **Technical Performance**
+- **Core Web Vitals**: >90/100 score
+- **API Response Times**: <2 seconds average
+- **Database Queries**: <50ms execution time
+- **Memory Usage**: <100MB peak frontend usage
+- **Bundle Size**: <2MB initial load
 
-**Visual Node System:**
-- **Namespace** (Blue) → **Class** (Green) → **Method** (Purple)
-- **Service** (Pink) → **Controller** (Indigo) → **Repository** (Brown)
-- **Interface** (Orange) → **Entity** (Teal)
-
-### **2. 📊 Advanced File Metrics Dashboard**
-
-**Real-time quality intelligence with actionable insights:**
-
-```typescript
-Analytics Capabilities:
-✅ Comprehensive Quality Assessment with health scoring
-✅ Advanced Sorting & Filtering (complexity, debt, health, churn)
-✅ High-performance Pagination for large repositories
-✅ Quality Hotspots identification with priority ranking
-✅ Technical Debt calculation with time-based estimates
-✅ Security Vulnerability detection and analysis
-✅ Code Complexity analysis (Cyclomatic & Cognitive)
-✅ Change Pattern analysis (volatility & stability)
-✅ Actionable Improvement Recommendations
-✅ Auto-refresh with live SignalR updates
-```
-
-### **3. ⚙️ Intelligent Configuration System**
-
-**Progressive analysis capabilities with resource awareness:**
-
-```yaml
-Analysis Levels:
-  Core:
-    - File Metrics, Complexity, Security, Performance
-    - Resource Impact: Low
-    - Processing Time: < 1 minute
-    
-  Advanced:
-    - Vocabulary, Dependencies, Pattern Mining
-    - Resource Impact: Medium
-    - Processing Time: 2-5 minutes
-    
-  Expert:
-    - AST Analysis, Graph Construction, Full Indexing
-    - Resource Impact: High
-    - Processing Time: 5-15 minutes
-```
-
-### **4. 📈 Historical Analytics & Trends**
-
-**Time-series data with predictive insights:**
-
-- **Repository Health Trends** - Quality score evolution over time
-- **Technical Debt Tracking** - Debt accumulation and reduction patterns
-- **Team Productivity Metrics** - Development velocity and collaboration patterns
-- **Language Distribution Evolution** - Technology stack changes over time
-- **Activity Pattern Analysis** - Development workflow optimization insights
-
----
-
-## 🏗️ **Architecture**
-
-### **System Components**
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React Frontend │    │    .NET API     │    │  Worker Service │
-│                 │    │                 │    │                 │
-│ • Code Graph    │◄──►│ • Analytics     │◄──►│ • Background    │
-│ • File Metrics  │    │ • Health Check  │    │ • Processing    │
-│ • Configuration │    │ • SignalR Hub   │    │ • Sync Tasks    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                        │                        │
-         └────────────────────────┼────────────────────────┘
-                                  │
-                    ┌─────────────────┐
-                    │  PostgreSQL DB  │
-                    │                 │
-                    │ • Repositories  │
-                    │ • File Metrics  │
-                    │ • Analytics     │
-                    └─────────────────┘
-```
-
-### **Technology Stack**
-
-**Backend Services:**
-- **.NET 8.0** - High-performance web API and background services
-- **Entity Framework Core** - Advanced ORM with PostgreSQL support
-- **SignalR** - Real-time communication for live updates
-- **AutoMapper** - Object-to-object mapping for clean architecture
-- **Serilog** - Structured logging for production monitoring
-
-**Frontend Application:**
-- **React 18** - Modern UI framework with concurrent features
-- **TypeScript** - Type-safe development with strict mode
-- **Material-UI v5** - Comprehensive component library
-- **D3.js** - Advanced data visualization for code graphs
-- **Recharts** - Chart library for analytics dashboards
-
-**Infrastructure:**
-- **Docker** - Containerized deployment for scalability
-- **PostgreSQL** - Robust relational database for production
-- **Nginx** - High-performance reverse proxy and static file serving
-- **Entity Framework Migrations** - Database schema versioning
-
----
-
-## 📊 **API Endpoints**
-
-### **Analytics Controller**
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/analytics/summary` | GET | Cross-repository analytics summary |
-| `/api/analytics/repository/{id}/history` | GET | Time-series metrics history |
-| `/api/analytics/repository/{id}/trends` | GET | Trend analysis with chart data |
-| `/api/analytics/repository/{id}/files` | GET | File metrics with pagination |
-| `/api/analytics/repository/{id}/quality/hotspots` | GET | Priority-ranked quality issues |
-| `/api/analytics/repository/{id}/code-graph` | GET | Complete code structure graph |
-
-### **Repository Management**
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/repositories` | GET | Repository listing with filters |
-| `/api/repositories/{id}` | GET | Detailed repository information |
-| `/api/repositories/{id}/sync` | POST | Trigger repository synchronization |
-| `/api/repositories/{id}/config` | PUT | Update analysis configuration |
-
-### **Health & Monitoring**
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/health` | GET | System health status |
-| `/api/health/detailed` | GET | Comprehensive health metrics |
-
----
+### **Scalability Targets**
+- **Repository Size**: Support 10,000+ files
+- **Concurrent Users**: 1,000+ simultaneous users
+- **Analysis Speed**: <5 minutes for large repository analysis
+- **Real-time Updates**: <1 second latency for live monitoring
 
 ## 🔧 **Configuration**
 
-### **Analysis Configuration**
+### **Environment Variables**
 
-```json
-{
-  "analysisConfig": {
-    "coreAnalysis": {
-      "enabled": true,
-      "fileMetrics": true,
-      "complexity": true,
-      "security": true,
-      "performance": true
-    },
-    "advancedAnalysis": {
-      "enabled": false,
-      "vocabulary": false,
-      "dependencies": false,
-      "patternMining": false
-    },
-    "expertAnalysis": {
-      "enabled": false,
-      "astAnalysis": false,
-      "graphConstruction": false,
-      "fullIndexing": false
-    }
-  },
-  "autoSync": {
-    "enabled": true,
-    "intervalMinutes": 60,
-    "adaptiveBehavior": true
-  }
-}
-```
-
-### **Database Configuration**
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=repolens_db;Username=postgres;Password=secure_password"
-  },
-  "Database": {
-    "EnableRetryOnFailure": true,
-    "MaxRetryCount": 3,
-    "CommandTimeout": 30
-  }
-}
-```
-
----
-
-## 🧪 **Testing**
-
-### **Running Tests**
-
+#### **Backend (RepoLens.Api)**
 ```bash
-# Unit Tests
-dotnet test RepoLens.Tests --filter Category=Unit
+# Database
+ConnectionStrings__DefaultConnection=
+POSTGRES_CONNECTION_STRING=
 
-# Integration Tests
-dotnet test RepoLens.Tests --filter Category=Integration
+# Authentication
+JWT_SECRET_KEY=
+JWT_EXPIRATION_HOURS=24
 
-# End-to-End Tests
-dotnet test RepoLens.Tests --filter Category=E2E
+# External Integrations
+GITHUB_TOKEN=
+GITLAB_TOKEN=
+ELASTICSEARCH_URL=
+REDIS_CONNECTION_STRING=
 
-# Coverage Report
-dotnet test --collect:"XPlat Code Coverage"
+# Feature Flags
+ENABLE_AST_ANALYSIS=true
+ENABLE_REAL_TIME_MONITORING=true
+ENABLE_SECURITY_SCANNING=true
 ```
 
-### **Test Categories**
+#### **Frontend (repolens-ui)**
+```bash
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_ENVIRONMENT=development
+REACT_APP_ENABLE_MOCK_DATA=false
+REACT_APP_VERSION=1.0.0
+```
 
-- **Unit Tests** - Component-level testing with mocking
-- **Integration Tests** - Service integration verification
-- **End-to-End Tests** - Complete workflow validation
-- **Performance Tests** - Load and stress testing
-- **Security Tests** - Vulnerability assessment
+### **Production Configuration**
+- **SSL/TLS certificates** for HTTPS
+- **Load balancer configuration** for high availability
+- **Database connection pooling** for performance
+- **CDN setup** for static asset delivery
+- **Monitoring and logging** configuration
 
----
+## 📚 **API Documentation**
 
-## 📈 **Performance & Scalability**
+### **Core API Endpoints**
 
-### **Performance Metrics**
+#### **Portfolio Management**
+- `GET /api/portfolio/summary` - Portfolio health overview
+- `GET /api/portfolio/repositories` - Repository list with health scores
+- `GET /api/portfolio/critical-issues` - Critical issues across portfolio
 
-| Metric | Target | Current | Status |
-|--------|--------|---------|---------|
-| **API Response Time** | < 500ms | < 300ms | ✅ |
-| **Frontend Load Time** | < 2s | < 1.5s | ✅ |
-| **Database Query Time** | < 100ms | < 80ms | ✅ |
-| **Memory Usage** | < 512MB | < 400MB | ✅ |
-| **CPU Usage** | < 70% | < 50% | ✅ |
+#### **Repository Analysis**
+- `GET /api/repositories/{id}` - Repository details and metrics
+- `GET /api/repositories/{id}/analytics` - Advanced analytics data
+- `POST /api/repositories/{id}/analyze` - Trigger repository analysis
+- `GET /api/repositories/{id}/code-graph` - AST-based code graph data
 
-### **Scalability Features**
+#### **Search & Discovery**
+- `GET /api/search/universal` - Universal search across repositories
+- `POST /api/search/natural-language` - Natural language code queries
+- `GET /api/search/files` - File-specific search
+- `GET /api/search/contributors` - Contributor search
 
-- **Horizontal Scaling** - Multiple API and Worker instances
-- **Database Optimization** - Indexed queries and connection pooling
-- **Caching Strategy** - Multi-level caching with Redis support
-- **Background Processing** - Queue-based async task processing
-- **Load Balancing** - Nginx-based request distribution
+#### **Real-time Updates**
+- **SignalR Hub**: `/hubs/repository-updates` - Live quality monitoring
+- **WebSocket Events**: Quality changes, analysis completion, issues detected
 
----
+### **Authentication**
+All API endpoints require JWT bearer token authentication:
+```bash
+Authorization: Bearer <jwt-token>
+```
 
-## 📚 **Documentation**
+## 📈 **Monitoring & Analytics**
 
-### **Available Documentation**
+### **Application Monitoring**
+- **Performance metrics** tracked in real-time
+- **Error tracking** with detailed stack traces
+- **User analytics** for Engineering Manager workflow optimization
+- **System health monitoring** with automated alerting
 
-| Document | Description |
-|----------|-------------|
-| **[CODE-GRAPH-VISUALIZATION.md](CODE-GRAPH-VISUALIZATION.md)** | Complete code graph feature guide |
-| **[04-ACTION-LIST.md](04-ACTION-LIST.md)** | Implementation status and roadmap |
-| **[DOCKER-SETUP.md](DOCKER-SETUP.md)** | Docker deployment instructions |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | Development contribution guidelines |
-
-### **API Documentation**
-
-- **Swagger UI** - Available at `/swagger` when running in development
-- **OpenAPI Specification** - Complete API contract documentation
-- **Postman Collection** - Ready-to-use API testing collection
-
----
+### **Business Intelligence**
+- **Quality trend analysis** across time periods
+- **Team productivity metrics** based on code quality improvements
+- **ROI calculations** for code quality investments
+- **Compliance reporting** for enterprise requirements
 
 ## 🤝 **Contributing**
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+### **Development Setup**
+1. **Fork the repository** on GitHub
+2. **Clone your fork** locally
+3. **Create feature branch**: `git checkout -b feature/amazing-feature`
+4. **Make changes** following code quality standards
+5. **Add tests** for new functionality
+6. **Run test suite**: `npm test && dotnet test`
+7. **Commit changes**: `git commit -m 'Add amazing feature'`
+8. **Push to branch**: `git push origin feature/amazing-feature`
+9. **Create Pull Request** with detailed description
 
-### **Development Workflow**
+### **Code Review Process**
+- **Automated testing** must pass
+- **Code quality gates** enforced
+- **Engineering Manager workflow** validation required
+- **Performance impact** assessment
+- **Security review** for new integrations
 
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### **Code Quality Standards**
-
-- **TypeScript** - Strict mode compliance required
-- **ESLint** - Configured with recommended rules
-- **Prettier** - Automatic code formatting
-- **Unit Tests** - Minimum 80% code coverage
-- **Integration Tests** - Critical path validation
-
----
+### **Issue Reporting**
+- **Bug reports**: Use GitHub Issues with reproduction steps
+- **Feature requests**: Include business justification and use cases
+- **Performance issues**: Include profiling data when possible
+- **Security issues**: Report privately to security@repolens.com
 
 ## 📄 **License**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 **Acknowledgments**
+
+- **Engineering Management Community** for requirements and feedback
+- **Open Source Contributors** for foundational libraries
+- **Microsoft** for .NET and TypeScript ecosystems
+- **React Team** for excellent frontend framework
+
+## 📞 **Support & Contact**
+
+- **Documentation**: [docs.repolens.com](https://docs.repolens.com)
+- **Community**: [community.repolens.com](https://community.repolens.com)
+- **Enterprise Support**: enterprise@repolens.com
+- **GitHub Issues**: [Issues Page](https://github.com/Renandgmail/autonomiccomputing/issues)
+- **Security Issues**: security@repolens.com
 
 ---
 
-## 🎯 **Roadmap**
+## 🎯 **Engineering Manager Quick Start**
 
-### **🔧 Phase 8: AST Analysis Integration** (Next)
-- **Timeline:** 2-3 weeks
-- **Scope:** Complete Code Graph with AST parsing
-- **Impact:** Full relationship mapping with method-level visibility
+### **First Time Login**
+1. **Access RepoLens**: Navigate to your deployment URL
+2. **Portfolio View**: See all repositories health at a glance (L1)
+3. **Identify Issues**: Check critical issues panel for urgent items
+4. **Drill Down**: Click any repository to investigate details (L2)
+5. **Take Action**: Use analytics and file detail views for resolution (L3-L4)
 
-### **📊 Phase 9: Advanced Analytics** 
-- **Timeline:** 4-6 weeks
-- **Scope:** Contributors analytics, security dashboard, dependency management
-- **Impact:** Comprehensive team and security insights
+### **Daily Workflow**
+- **Morning Check**: Quick L1 portfolio scan (<30 seconds)
+- **Issue Triage**: Review critical issues for team prioritization
+- **Team Focus**: Use analytics to identify areas needing attention
+- **Progress Tracking**: Monitor quality improvements over time
 
-### **🚀 Phase 10: Enterprise Features**
-- **Timeline:** 8-12 weeks  
-- **Scope:** Multi-tenant support, advanced reporting, API rate limiting
-- **Impact:** Enterprise-grade platform capabilities
-
----
-
-## 📞 **Support & Community**
-
-- **🐛 Bug Reports** - [GitHub Issues](https://github.com/repolens/repolens/issues)
-- **💡 Feature Requests** - [GitHub Discussions](https://github.com/repolens/repolens/discussions)
-- **📧 Email Support** - support@repolens.com
-- **📖 Documentation** - [docs.repolens.com](https://docs.repolens.com)
+**Target Achievement**: Answer *"Where does my team need to focus?"* in under 90 seconds ✅
 
 ---
 
-**🎯 RepoLens: Complete code visibility ensuring no component exists in isolation.**
+**RepoLens** - *Transforming Engineering Management through Actionable Code Analytics*
 
-**Built with ❤️ by the RepoLens Team**
+*Version 1.0.0 | Built for Engineering Leaders | Enterprise Ready*

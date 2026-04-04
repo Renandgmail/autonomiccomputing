@@ -5,6 +5,7 @@ using RepoLens.Api.Controllers;
 using RepoLens.Api.Models;
 using RepoLens.Core.Entities;
 using RepoLens.Core.Repositories;
+using RepoLens.Core.Services;
 using Xunit;
 
 namespace RepoLens.Tests.Controllers;
@@ -12,14 +13,32 @@ namespace RepoLens.Tests.Controllers;
 public class AnalyticsControllerTests
 {
     private readonly Mock<IRepositoryMetricsRepository> _mockMetricsRepository;
+    private readonly Mock<IFileMetricsRepository> _mockFileMetricsRepository;
+    private readonly Mock<IContributorMetricsRepository> _mockContributorMetricsRepository;
+    private readonly Mock<IFileMetricsService> _mockFileMetricsService;
+    private readonly Mock<IContributorAnalyticsService> _mockContributorAnalyticsService;
+    private readonly Mock<IVocabularyExtractionService> _mockVocabularyService;
     private readonly Mock<ILogger<AnalyticsController>> _mockLogger;
     private readonly AnalyticsController _controller;
 
     public AnalyticsControllerTests()
     {
         _mockMetricsRepository = new Mock<IRepositoryMetricsRepository>();
+        _mockFileMetricsRepository = new Mock<IFileMetricsRepository>();
+        _mockContributorMetricsRepository = new Mock<IContributorMetricsRepository>();
+        _mockFileMetricsService = new Mock<IFileMetricsService>();
+        _mockContributorAnalyticsService = new Mock<IContributorAnalyticsService>();
+        _mockVocabularyService = new Mock<IVocabularyExtractionService>();
         _mockLogger = new Mock<ILogger<AnalyticsController>>();
-        _controller = new AnalyticsController(_mockMetricsRepository.Object, _mockLogger.Object);
+        
+        _controller = new AnalyticsController(
+            _mockMetricsRepository.Object,
+            _mockFileMetricsRepository.Object,
+            _mockContributorMetricsRepository.Object,
+            _mockFileMetricsService.Object,
+            _mockContributorAnalyticsService.Object,
+            _mockVocabularyService.Object,
+            _mockLogger.Object);
     }
 
     [Fact]

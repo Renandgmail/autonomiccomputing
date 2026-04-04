@@ -77,6 +77,12 @@ public class VocabularyExtractionResult
     public List<string> DominantDomains { get; set; } = new();
     public List<VocabularyTerm> HighValueTerms { get; set; } = new();
     public string? ErrorMessage { get; set; }
+    
+    // Properties for backward compatibility with tests
+    public int TotalTerms { get; set; }
+    public int BusinessTermsCount { get; set; }
+    public int TechnicalTermsCount { get; set; }
+    public int DomainSpecificCount { get; set; }
 }
 
 /// <summary>

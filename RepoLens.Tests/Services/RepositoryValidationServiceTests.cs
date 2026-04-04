@@ -145,7 +145,7 @@ public class RepositoryValidationServiceTests
         // Assert
         result.Should().BeFalse();
         VerifyLogCalled(LogLevel.Warning); // Format validation failure
-        _mockGitService.Verify(g => g.OpenOrCloneRepositoryAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockGitService.Verify(g => g.OpenOrCloneRepositoryAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -327,14 +327,14 @@ public class RepositoryValidationServiceTests
         // Create a disposable mock that behaves like a valid repository
         var mockRepo = new Mock<IDisposable>();
         _mockGitService
-            .Setup(g => g.OpenOrCloneRepositoryAsync(It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync((LibGit2Sharp.Repository)mockRepo.Object); 
+            .Setup(g => g.OpenOrCloneRepositoryAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((LibGit2Sharp.Repository)mockRepo.Object);
     }
 
     private void SetupMockGitServiceFailure()
     {
         _mockGitService
-            .Setup(g => g.OpenOrCloneRepositoryAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(g => g.OpenOrCloneRepositoryAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Git operation failed"));
     }
 

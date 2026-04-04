@@ -128,7 +128,7 @@ public class GitProviderController : ControllerBase
                     $"No provider found for repository URL: {request.RepositoryUrl}"));
             }
 
-            var context = new RepositoryContext(
+            var context = new RepoLens.Core.Entities.RepositoryContext(
                 RepositoryId: repositoryId,
                 Url: request.RepositoryUrl,
                 ProviderType: provider.ProviderType,
@@ -272,7 +272,7 @@ public class GitProviderController : ControllerBase
                     $"No provider found for repository URL: {request.RepositoryUrl}"));
             }
 
-            var context = new RepositoryContext(
+            var context = new RepoLens.Core.Entities.RepositoryContext(
                 RepositoryId: repositoryId,
                 Url: request.RepositoryUrl,
                 ProviderType: provider.ProviderType,
@@ -414,7 +414,7 @@ public class GitProviderController : ControllerBase
                     $"No provider found for repository URL: {request.RepositoryUrl}"));
             }
 
-            var context = new RepositoryContext(
+            var context = new RepoLens.Core.Entities.RepositoryContext(
                 RepositoryId: repositoryId,
                 Url: request.RepositoryUrl,
                 ProviderType: provider.ProviderType,

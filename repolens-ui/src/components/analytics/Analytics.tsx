@@ -28,7 +28,6 @@ import {
   Speed
 } from '@mui/icons-material';
 import TrendChart from '../charts/TrendChart';
-import ContributorHeatmap from '../charts/ContributorHeatmap';
 import apiService from '../../services/apiService';
 
 interface Repository {

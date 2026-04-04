@@ -108,7 +108,7 @@ public class AddAutonomicRepositoryToUITest : IDisposable
             LastAnalysisAt = DateTime.UtcNow,
             IsLocal = true, // Mark as local since it's on the file system
             LocalPath = REPO_LOCAL_PATH,
-            Tags = ["autonomic-computing", "self-healing", "vocabulary-extraction", "intelligent-analysis"],
+            Tags = "autonomic-computing,self-healing,vocabulary-extraction,intelligent-analysis",
             Notes = "Local autonomic computing repository with real-time vocabulary analysis and self-learning capabilities"
         };
 
@@ -285,7 +285,7 @@ public class AddAutonomicRepositoryToUITest : IDisposable
                 Signature = "public class VocabularyExtractionService : IVocabularyExtractionService",
                 StartLine = 15,
                 EndLine = 850,
-                AccessModifier = AccessModifier.Public,
+                AccessModifier = "public",
                 IsStatic = false,
                 IsAsync = false,
                 Parameters = JsonSerializer.Serialize(new { 
@@ -301,7 +301,7 @@ public class AddAutonomicRepositoryToUITest : IDisposable
                 Signature = "public async Task<VocabularyExtractionResult> ExtractVocabularyAsync(int repositoryId, CancellationToken ct = default)",
                 StartLine = 45,
                 EndLine = 125,
-                AccessModifier = AccessModifier.Public,
+                AccessModifier = "public",
                 IsStatic = false,
                 IsAsync = true,
                 Parameters = JsonSerializer.Serialize(new { 
@@ -316,7 +316,7 @@ public class AddAutonomicRepositoryToUITest : IDisposable
                 Signature = "public class Repository",
                 StartLine = 8,
                 EndLine = 185,
-                AccessModifier = AccessModifier.Public,
+                AccessModifier = "public",
                 IsStatic = false,
                 IsAsync = false,
                 Parameters = JsonSerializer.Serialize(new { 
@@ -331,7 +331,7 @@ public class AddAutonomicRepositoryToUITest : IDisposable
                 Signature = "const Search: React.FC<SearchProps> = ({ onResults })",
                 StartLine = 25,
                 EndLine = 245,
-                AccessModifier = AccessModifier.Public,
+                AccessModifier = "public",
                 IsStatic = false,
                 IsAsync = false,
                 Parameters = JsonSerializer.Serialize(new { 

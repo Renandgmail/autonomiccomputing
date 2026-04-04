@@ -407,7 +407,7 @@ public class ConsolidatedCodeSearchIntegrationTest : IDisposable
             LastAnalysisAt = DateTime.UtcNow,
             IsLocal = true,
             LocalPath = REPO_LOCAL_PATH,
-            Tags = ["autonomic-computing", "code-search", "vocabulary-extraction", "pattern-mining", "natural-language-processing", "intelligent-analysis"],
+            Tags = "autonomic-computing,code-search,vocabulary-extraction,pattern-mining,natural-language-processing,intelligent-analysis",
             Notes = "Repository with comprehensive code search capabilities including natural language queries, semantic search, pattern recognition, and business vocabulary mapping"
         };
 
@@ -522,7 +522,7 @@ public class ConsolidatedCodeSearchIntegrationTest : IDisposable
             try
             {
                 var relativePath = Path.GetRelativePath(REPO_LOCAL_PATH, filePath);
-                var fileInfo = new FileInfo(filePath);
+                var fileInfo = new System.IO.FileInfo(filePath);
                 var language = DetermineLanguageFromExtension(Path.GetExtension(filePath));
                 var content = await File.ReadAllTextAsync(filePath);
                 
@@ -1100,8 +1100,8 @@ public class ConsolidatedCodeSearchIntegrationTest : IDisposable
     {
         try
         {
-            var directoryInfo = new DirectoryInfo(REPO_LOCAL_PATH);
-            return GetDirectorySize(directoryInfo);
+        var directoryInfo = new System.IO.DirectoryInfo(REPO_LOCAL_PATH);
+        return GetDirectorySize(directoryInfo);
         }
         catch
         {
@@ -1109,13 +1109,13 @@ public class ConsolidatedCodeSearchIntegrationTest : IDisposable
         }
     }
 
-    private static long GetDirectorySize(DirectoryInfo dirInfo)
+    private static long GetDirectorySize(System.IO.DirectoryInfo dirInfo)
     {
         long size = 0;
         try
         {
-            FileInfo[] fileInfos = dirInfo.GetFiles();
-            foreach (FileInfo fileInfo in fileInfos)
+            System.IO.FileInfo[] fileInfos = dirInfo.GetFiles();
+            foreach (System.IO.FileInfo fileInfo in fileInfos)
             {
                 if (!IsIgnoredPath(fileInfo.FullName))
                 {
@@ -1342,6 +1342,7 @@ public class SearchResultDemo
 {
     public string SearchType { get; set; } = "";
     public int TotalResults { get; set; }
+    public int Count => TotalResults; // Property that tests expect
     public double AverageResponseTime { get; set; }
     public double AverageRelevance { get; set; }
     public int SuccessfulQueries { get; set; }

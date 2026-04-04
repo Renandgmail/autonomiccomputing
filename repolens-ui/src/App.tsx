@@ -1,70 +1,36 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Box } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline, Box, Typography } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Import RepoLens Design System
+import repoLensTheme from './theme/design-system';
 
 // Components
 import MainLayout from './components/layout/MainLayout';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
+import L1PortfolioDashboard from './components/portfolio/L1PortfolioDashboard';
+import L2RepositoryDashboard from './components/repository/L2RepositoryDashboard';
+import L3Analytics from './components/analytics/L3Analytics';
+import L3UniversalSearch from './components/search/L3UniversalSearch';
+import L3CodeGraph from './components/codegraph/L3CodeGraph';
+import L4FileDetail from './components/files/L4FileDetail';
 import Dashboard from './components/dashboard/Dashboard';
 import Repositories from './components/repositories/Repositories';
 import RepositoryDetails from './components/repositories/RepositoryDetails';
 import Search from './components/search/Search';
 import Analytics from './components/analytics/Analytics';
+import CodeGraphVisualization from './components/codegraph/CodeGraphVisualization';
+import NaturalLanguageSearch from './components/search/NaturalLanguageSearch';
+import { WinFormsModernizationDashboard } from './components/winforms/WinFormsModernizationDashboard';
 
 // Services
 import apiService from './services/apiService';
 
-// Create Material-UI theme
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-    background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
-    },
-  },
-  typography: {
-    h4: {
-      fontWeight: 600,
-    },
-    h5: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 600,
-    },
-  },
-  components: {
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          borderRadius: 12,
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          textTransform: 'none',
-          fontWeight: 600,
-        },
-      },
-    },
-  },
-});
+// Use RepoLens Design System theme
+// Replaces old Material-UI theme with RepoLens specification-compliant styling
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -112,7 +78,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={repoLensTheme}>
         <CssBaseline />
         <Router>
           <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -135,6 +101,42 @@ function App() {
                 }
               />
 
+              {/* Demo route (no authentication required) */}
+              <Route
+                path="/demo/codegraph"
+                element={
+                  <Box sx={{ p: 3 }}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="h4" gutterBottom>
+                        Code Graph Visualization Demo
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" gutterBottom>
+                        Interactive code architecture visualization with clickable drill-down functionality
+                      </Typography>
+                    </Box>
+                    <CodeGraphVisualization repositoryId={1} />
+                  </Box>
+                }
+              />
+
+              {/* Demo Search Route */}
+              <Route
+                path="/demo/search"
+                element={
+                  <Box sx={{ p: 3 }}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="h4" gutterBottom>
+                        Natural Language Code Search Demo
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" gutterBottom>
+                        Ask questions about your code in plain English - find functions, classes, patterns and more
+                      </Typography>
+                    </Box>
+                    <NaturalLanguageSearch repositoryId={1} />
+                  </Box>
+                }
+              />
+
               {/* Protected routes */}
               <Route
                 path="/"
@@ -144,19 +146,35 @@ function App() {
                   </ProtectedRoute>
                 }
               >
-                {/* Dashboard */}
-                <Route index element={<Navigate to="/dashboard" replace />} />
+                {/* Portfolio Dashboard - L1 Engineering Manager Focus */}
+                <Route index element={<L1PortfolioDashboard />} />
+                <Route path="portfolio" element={<Navigate to="/" replace />} />
+                
+                {/* Legacy Dashboard - L3 Technical Details */}
                 <Route path="dashboard" element={<Dashboard />} />
 
-                {/* Repositories */}
+                {/* Repositories - L2 Repository Dashboard */}
                 <Route path="repositories" element={<Repositories />} />
+                <Route path="repositories/:repositoryId" element={<L2RepositoryDashboard />} />
                 <Route path="repositories/:id" element={<RepositoryDetails />} />
 
-                {/* Search & Discovery */}
-                <Route path="search" element={<Search />} />
+                {/* Repository-specific L2 and L3 Routes */}
+                <Route path="repos/:repoId" element={<L2RepositoryDashboard />} />
+                <Route path="repos/:repoId/analytics" element={<L3Analytics />} />
+                <Route path="repos/:repoId/analytics/:tab" element={<L3Analytics />} />
+                <Route path="repos/:repoId/search" element={<L3UniversalSearch />} />
+                <Route path="repos/:repoId/graph" element={<L3CodeGraph />} />
+                <Route path="repos/:repoId/files/:fileId" element={<L4FileDetail />} />
 
-                {/* Analytics */}
+                {/* Global Search & Discovery */}
+                <Route path="search" element={<L3UniversalSearch />} />
+                <Route path="search/:tab" element={<L3UniversalSearch />} />
+
+                {/* Legacy Analytics */}
                 <Route path="analytics" element={<Analytics />} />
+
+                {/* WinForms Modernization */}
+                <Route path="winforms" element={<WinFormsModernizationDashboard />} />
 
                 {/* Settings & Admin */}
                 <Route path="settings" element={<div>Settings (Coming Soon)</div>} />
@@ -164,7 +182,7 @@ function App() {
               </Route>
 
               {/* Catch all route */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Box>
         </Router>

@@ -22,6 +22,9 @@ import {
 } from '@mui/icons-material';
 import apiService from '../../services/apiService';
 import { DashboardStats, ProcessingStatus } from '../../types/api';
+import MetricCard from '../MetricCard';
+import RepositoryHealthChip from '../RepositoryHealthChip';
+import QualityHotspotRow, { QualityHotspot } from '../QualityHotspotRow';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -29,6 +32,46 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+
+  // Mock data for component demonstration
+  const mockQualityHotspots: QualityHotspot[] = [
+    {
+      id: '1',
+      filePath: 'src/services/apiService.ts',
+      complexityScore: 92,
+      churnRate: 78,
+      qualityDeficit: 85,
+      urgencyScore: 95,
+      language: 'TypeScript',
+      lineCount: 850,
+      lastModified: '2024-03-25T10:30:00Z',
+      issues: { security: 2, bugs: 3, codeSmells: 5 }
+    },
+    {
+      id: '2', 
+      filePath: 'components/dashboard/Dashboard.tsx',
+      complexityScore: 76,
+      churnRate: 45,
+      qualityDeficit: 62,
+      urgencyScore: 68,
+      language: 'TypeScript',
+      lineCount: 420,
+      lastModified: '2024-03-20T14:15:00Z',
+      issues: { security: 0, bugs: 1, codeSmells: 3 }
+    },
+    {
+      id: '3',
+      filePath: 'theme/design-system.ts',
+      complexityScore: 45,
+      churnRate: 25,
+      qualityDeficit: 30,
+      urgencyScore: 35,
+      language: 'TypeScript', 
+      lineCount: 280,
+      lastModified: '2024-03-28T09:45:00Z',
+      issues: { security: 0, bugs: 0, codeSmells: 1 }
+    }
+  ];
 
   const formatBytes = (bytes: number) => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -181,7 +224,7 @@ const Dashboard: React.FC = () => {
         </Typography>
       </Box>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Enhanced with MetricCard components */}
       <Box
         sx={{
           display: 'grid',
@@ -191,79 +234,65 @@ const Dashboard: React.FC = () => {
             md: '1fr 1fr 1fr 1fr'
           },
           gap: 3,
-          mb: 4
+          mb: 4,
+          justifyItems: 'center', // Center the 220px fixed-width cards
         }}
       >
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Folder sx={{ color: 'primary.main', mr: 1 }} />
-              <Typography variant="h6" component="div">
-                Repositories
-              </Typography>
-            </Box>
-            <Typography variant="h3" component="div" color="primary.main">
-              {dashboardStats.totalRepositories}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Total tracked repositories
-            </Typography>
-          </CardContent>
-        </Card>
+        <MetricCard
+          label="Repositories"
+          value={dashboardStats.totalRepositories}
+          trend={{
+            direction: 'up',
+            delta: '+2',
+            context: 'this month',
+            positive: 'up'
+          }}
+          onClick={() => navigate('/repositories')}
+          loading={loading}
+          aria-label="Total repositories with navigation to repositories page"
+        />
 
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Code sx={{ color: 'success.main', mr: 1 }} />
-              <Typography variant="h6" component="div">
-                Code Files
-              </Typography>
-            </Box>
-            <Typography variant="h3" component="div" color="success.main">
-              {dashboardStats.totalArtifacts.toLocaleString()}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Files analyzed
-            </Typography>
-          </CardContent>
-        </Card>
+        <MetricCard
+          label="Code Files"
+          value={dashboardStats.totalArtifacts.toLocaleString()}
+          trend={{
+            direction: 'up',
+            delta: '+15%',
+            context: 'vs last week',
+            positive: 'up'
+          }}
+          onClick={() => navigate('/analytics')}
+          loading={loading}
+          aria-label="Total code files analyzed with navigation to analytics"
+        />
 
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <TrendingUp sx={{ color: 'warning.main', mr: 1 }} />
-              <Typography variant="h6" component="div">
-                Storage
-              </Typography>
-            </Box>
-            <Typography variant="h3" component="div" color="warning.main">
-              {formatBytes(dashboardStats.totalStorageBytes)}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Data indexed
-            </Typography>
-          </CardContent>
-        </Card>
+        <MetricCard
+          label="Storage"
+          value={formatBytes(dashboardStats.totalStorageBytes)}
+          trend={{
+            direction: 'up',
+            delta: '+8%',
+            context: 'this month',
+            positive: 'up'
+          }}
+          loading={loading}
+          aria-label="Total data storage indexed"
+        />
 
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Security sx={{ color: 'error.main', mr: 1 }} />
-              <Typography variant="h6" component="div">
-                Status
-              </Typography>
-            </Box>
-            <Chip
-              label={dashboardStats.processingStatus}
-              color={getStatusColor(dashboardStats.processingStatus)}
-              variant="outlined"
-              sx={{ fontSize: '1rem', height: 32 }}
-            />
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              System health
-            </Typography>
-          </CardContent>
-        </Card>
+        <MetricCard
+          label="System Health"
+          value={getProcessingPercentage(dashboardStats.processingStatus)}
+          unit="%"
+          healthScore={getProcessingPercentage(dashboardStats.processingStatus)}
+          trend={{
+            direction: dashboardStats.processingStatus === ProcessingStatus.Completed ? 'up' : 'down',
+            delta: dashboardStats.processingStatus === ProcessingStatus.Completed ? 'Stable' : 'Processing',
+            context: 'current status',
+            positive: 'up'
+          }}
+          loading={loading}
+          aria-label="System processing health score"
+        />
       </Box>
 
       {/* Main Content */}
@@ -366,6 +395,92 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
       </Box>
+
+      {/* Repository Health Overview - NEW COMPONENT DEMO */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" component="h2" gutterBottom>
+            Repository Health Overview
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Quick health assessment across your repository portfolio
+          </Typography>
+          
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 3, 
+            flexWrap: 'wrap',
+            mt: 2,
+            alignItems: 'center'
+          }}>
+            <RepositoryHealthChip 
+              healthScore={92} 
+              trend={{ direction: 'up', delta: 3 }}
+              showLabel
+              onClick={() => navigate('/repositories/1')}
+              aria-label="RepoLens API - Excellent health, trending up"
+            />
+            <RepositoryHealthChip 
+              healthScore={76} 
+              trend={{ direction: 'flat', delta: 0 }}
+              showLabel
+              onClick={() => navigate('/repositories/2')}
+              aria-label="RepoLens UI - Good health, stable"
+            />
+            <RepositoryHealthChip 
+              healthScore={45} 
+              trend={{ direction: 'down', delta: -5 }}
+              showLabel
+              onClick={() => navigate('/repositories/3')}
+              aria-label="Legacy System - Poor health, trending down"
+            />
+            <RepositoryHealthChip 
+              healthScore={23} 
+              trend={{ direction: 'down', delta: -8 }}
+              showLabel
+              onClick={() => navigate('/repositories/4')}
+              aria-label="Old Codebase - Critical health, needs attention"
+            />
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Quality Hotspots - NEW COMPONENT DEMO */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" component="h2" gutterBottom>
+            Top Quality Hotspots
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Files ranked by complexity × churn × quality deficit - requiring immediate attention
+          </Typography>
+          
+          <Box sx={{ mt: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+            {mockQualityHotspots.map((hotspot, index) => (
+              <QualityHotspotRow
+                key={hotspot.id}
+                hotspot={hotspot}
+                repositoryId={1}
+                rank={index + 1}
+                onViewFile={(filePath) => {
+                  console.log('Navigate to file:', filePath);
+                  navigate(`/repos/1/files/${encodeURIComponent(filePath)}`);
+                }}
+              />
+            ))}
+          </Box>
+          
+          <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Button 
+              variant="outlined" 
+              onClick={() => navigate('/analytics')}
+              size="small"
+            >
+              View All Quality Issues
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Processing Status */}
       <Card>

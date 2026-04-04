@@ -1,299 +1,194 @@
-import React, { useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import {
-  Box,
-  Drawer,
-  AppBar,
-  Toolbar,
-  List,
-  Typography,
-  IconButton,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  Badge,
-  Tooltip
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Dashboard,
-  Folder,
-  Search,
-  Analytics,
-  Settings,
-  Logout,
-  Person,
-  Notifications
-} from '@mui/icons-material';
+/**
+ * Main Layout Component
+ * Updated to use Global Navigation + Context Bar architecture
+ * Preserves all existing authentication and routing logic while switching to top navigation
+ */
 
+import React, { useState, useEffect } from 'react';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Box, useTheme, useMediaQuery } from '@mui/material';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import GlobalNavigation from './GlobalNavigation';
+import ContextBar from './ContextBar';
+import AIAssistantOverlay from '../ai/AIAssistantOverlay';
 import apiService from '../../services/apiService';
 
-const DRAWER_WIDTH = 280;
+interface Repository {
+  id: number;
+  name: string;
+  healthScore?: number;
+  lastSyncAt?: string;
+  syncStatus?: 'synced' | 'syncing' | 'error';
+}
 
 const MainLayout: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { user, loading } = useAuth(); // REUSE existing auth logic
+  const { id: repoId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const user = apiService.getCurrentUser();
+  // Repository state for context bar
+  const [currentRepository, setCurrentRepository] = useState<Repository | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const menuItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Repositories', icon: <Folder />, path: '/repositories' },
-    { text: 'Search', icon: <Search />, path: '/search' },
-    { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
-    { text: 'Settings', icon: <Settings />, path: '/settings' }
-  ];
+  // Load repository data when on repository pages
+  useEffect(() => {
+    const loadRepositoryContext = async () => {
+      if (!repoId) {
+        setCurrentRepository(null);
+        return;
+      }
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
+      try {
+        const repo = await apiService.getRepository(parseInt(repoId));
+        
+        // Adapt repository data to our context interface
+        const adaptedRepo: Repository = {
+          id: repo.id,
+          name: repo.name,
+          healthScore: repo.healthScore || calculateHealthScore(repo),
+          lastSyncAt: repo.lastSyncAt,
+          syncStatus: determineSyncStatus(repo)
+        };
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+        setCurrentRepository(adaptedRepo);
+      } catch (error) {
+        console.error('Failed to load repository context:', error);
+        setCurrentRepository(null);
+      }
+    };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+    loadRepositoryContext();
+  }, [repoId]);
 
-  const handleLogout = async () => {
-    try {
-      await apiService.logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
-      navigate('/login'); // Navigate anyway
+  // Calculate health score if not provided
+  const calculateHealthScore = (repo: any): number => {
+    let score = 70; // Base score
+    
+    if (repo.codeQualityScore) {
+      score = (score + repo.codeQualityScore) / 2;
     }
-    handleMenuClose();
+    
+    if (repo.projectHealthScore) {
+      score = repo.projectHealthScore;
+    }
+    
+    // Adjust based on last sync
+    if (repo.lastSyncAt) {
+      const daysSinceSync = (Date.now() - new Date(repo.lastSyncAt).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceSync > 7) score -= 10;
+      if (daysSinceSync > 30) score -= 20;
+    }
+    
+    return Math.max(0, Math.min(100, score));
   };
 
-  const isActivePath = (path: string) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
+  // Determine sync status from repository data
+  const determineSyncStatus = (repo: any): 'synced' | 'syncing' | 'error' => {
+    if (repo.syncErrorMessage) return 'error';
+    if (repo.status === 2 || repo.processingStatus === 2) return 'syncing'; // Status.Syncing or ProcessingStatus.InProgress
+    return 'synced';
   };
 
-  const drawer = (
-    <Box>
-      {/* Logo */}
-      <Toolbar sx={{ justifyContent: 'center', py: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar
-            sx={{
-              bgcolor: 'primary.main',
-              width: 32,
-              height: 32,
-              mr: 1
-            }}
-          >
-            RL
-          </Avatar>
-          <Typography variant="h6" noWrap component="div" color="primary">
-            RepoLens
-          </Typography>
-        </Box>
-      </Toolbar>
+  // Handle repository refresh
+  const handleRepositoryRefresh = async () => {
+    if (!currentRepository || refreshing) return;
 
-      <Divider />
+    setRefreshing(true);
+    try {
+      await apiService.syncRepository(currentRepository.id);
+      
+      // Update sync status to syncing
+      setCurrentRepository(prev => prev ? {
+        ...prev,
+        syncStatus: 'syncing'
+      } : null);
+      
+      // Reload repository data after a short delay
+      setTimeout(async () => {
+        try {
+          const repo = await apiService.getRepository(currentRepository.id);
+          const adaptedRepo: Repository = {
+            id: repo.id,
+            name: repo.name,
+            healthScore: repo.healthScore || calculateHealthScore(repo),
+            lastSyncAt: repo.lastSyncAt,
+            syncStatus: determineSyncStatus(repo)
+          };
+          setCurrentRepository(adaptedRepo);
+        } catch (error) {
+          console.error('Failed to reload repository after sync:', error);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to sync repository:', error);
+      setCurrentRepository(prev => prev ? {
+        ...prev,
+        syncStatus: 'error'
+      } : null);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
-      {/* Navigation */}
-      <List sx={{ px: 2 }}>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
-            <ListItemButton
-              onClick={() => navigate(item.path)}
-              selected={isActivePath(item.path)}
-              sx={{
-                borderRadius: 2,
-                '&.Mui-selected': {
-                  backgroundColor: 'primary.main',
-                  color: 'white',
-                  '&:hover': {
-                    backgroundColor: 'primary.dark',
-                  },
-                  '& .MuiListItemIcon-root': {
-                    color: 'white',
-                  },
-                },
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+  // Handle mobile menu toggle (for future mobile sidebar implementation)
+  const handleMobileMenuToggle = () => {
+    // TODO: Implement mobile menu sidebar if needed
+    console.log('Mobile menu toggle');
+  };
 
-      {/* User info at bottom */}
-      <Box sx={{ position: 'absolute', bottom: 0, width: '100%', p: 2 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            p: 2,
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            border: '1px solid',
-            borderColor: 'divider'
-          }}
-        >
-          <Avatar sx={{ width: 32, height: 32, mr: 2 }}>
-            {user?.firstName?.[0]}{user?.lastName?.[0]}
-          </Avatar>
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Typography variant="subtitle2" noWrap>
-              {user?.firstName} {user?.lastName}
-            </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap>
-              {user?.email}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
-  );
+  // PRESERVE all existing authentication logic
+  if (!user && !loading) {
+    return <Navigate to="/login" replace />;
+  }
 
-  return (
-    <Box sx={{ display: 'flex' }}>
-      {/* App Bar */}
-      <AppBar
-        position="fixed"
+  if (loading) {
+    return (
+      <Box
         sx={{
-          width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
-          ml: { sm: `${DRAWER_WIDTH}px` },
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          backgroundColor: 'background.default'
         }}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find(item => isActivePath(item.path))?.text || 'RepoLens'}
-          </Typography>
-
-          {/* Header actions */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Tooltip title="Notifications">
-              <IconButton color="inherit" size="large">
-                <Badge badgeContent={0} color="secondary">
-                  <Notifications />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Account settings">
-              <IconButton
-                onClick={handleMenuClick}
-                size="small"
-                sx={{ ml: 2 }}
-                aria-controls={anchorEl ? 'account-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={anchorEl ? 'true' : undefined}
-              >
-                <Avatar sx={{ width: 32, height: 32 }}>
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </Avatar>
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      {/* Profile Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        id="account-menu"
-        open={!!anchorEl}
-        onClose={handleMenuClose}
-        onClick={handleMenuClose}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-      >
-        <MenuItem onClick={() => navigate('/settings')}>
-          <ListItemIcon>
-            <Person fontSize="small" />
-          </ListItemIcon>
-          Profile
-        </MenuItem>
-        <MenuItem onClick={() => navigate('/settings')}>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
-      </Menu>
-
-      {/* Sidebar */}
-      <Box
-        component="nav"
-        sx={{ width: { sm: DRAWER_WIDTH }, flexShrink: { sm: 0 } }}
-      >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: DRAWER_WIDTH,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: DRAWER_WIDTH,
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
+        Loading...
       </Box>
+    );
+  }
 
-      {/* Main content */}
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {/* Global Navigation */}
+      <GlobalNavigation onMobileMenuToggle={handleMobileMenuToggle} />
+      
+      {/* Context Bar (show on repository pages L2+) */}
+      {currentRepository && (
+        <ContextBar 
+          repository={currentRepository}
+          onRefresh={handleRepositoryRefresh}
+        />
+      )}
+      
+      {/* Main Content */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
-          backgroundColor: 'background.default',
-          minHeight: '100vh'
+          p: 3,
+          mt: currentRepository ? '104px' : '56px', // Account for nav + context bar height
+          overflow: 'auto',
+          backgroundColor: 'background.default'
         }}
       >
-        <Toolbar />
-        <Box sx={{ p: 3 }}>
-          <Outlet />
-        </Box>
+        <Outlet />
       </Box>
+
+      {/* AI Assistant Overlay - Available on all screens */}
+      <AIAssistantOverlay />
     </Box>
   );
 };

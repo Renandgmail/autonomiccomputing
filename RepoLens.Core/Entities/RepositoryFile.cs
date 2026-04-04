@@ -36,6 +36,13 @@ public class RepositoryFile
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     
+    // Additional property for tests
+    public string? Content { get; set; }
+    
+    // Quality metrics properties for Repository Service calculations
+    public int? CyclomaticComplexity { get; set; }
+    public double? TestCoveragePercentage { get; set; }
+    
     // Navigation properties
     public virtual Repository Repository { get; set; } = null!;
     public virtual ICollection<CodeElement> CodeElements { get; set; } = new List<CodeElement>();

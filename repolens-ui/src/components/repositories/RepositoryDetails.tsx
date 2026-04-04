@@ -57,6 +57,10 @@ import {
 import apiService from '../../services/apiService';
 import { Repository, ProcessingStatus, RepositoryStatus } from '../../types/api';
 import FileMetricsDashboard from '../analytics/FileMetricsDashboard';
+import ContributorAnalytics from '../analytics/ContributorAnalytics';
+import SecurityAnalytics from '../security/SecurityAnalytics';
+import DependencyAnalytics from '../dependencies/DependencyAnalytics';
+import CodeGraphVisualization from '../codegraph/CodeGraphVisualization';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -426,6 +430,7 @@ const RepositoryDetails: React.FC = () => {
           <Tab label="Contributors" {...a11yProps(2)} />
           <Tab label="Security" {...a11yProps(3)} />
           <Tab label="Dependencies" {...a11yProps(4)} />
+          <Tab label="Code Graph" {...a11yProps(5)} />
         </Tabs>
       </Box>
 
@@ -743,62 +748,25 @@ const RepositoryDetails: React.FC = () => {
 
       {/* Contributors Tab */}
       <TabPanel value={tabValue} index={2}>
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Contributor Analytics
-            </Typography>
-            <Alert severity="info">
-              Advanced contributor analytics dashboard coming soon. This will include:
-              <List dense>
-                <ListItem><ListItemText primary="• Team collaboration patterns" /></ListItem>
-                <ListItem><ListItemText primary="• Individual productivity metrics" /></ListItem>
-                <ListItem><ListItemText primary="• Knowledge sharing analysis" /></ListItem>
-                <ListItem><ListItemText primary="• Risk assessment (bus factor)" /></ListItem>
-              </List>
-            </Alert>
-          </CardContent>
-        </Card>
+        <ContributorAnalytics 
+          repositoryId={parseInt(id!)} 
+          timeRange={30}
+        />
       </TabPanel>
 
       {/* Security Tab */}
       <TabPanel value={tabValue} index={3}>
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Security Analysis
-            </Typography>
-            <Alert severity="info">
-              Comprehensive security dashboard coming soon. This will include:
-              <List dense>
-                <ListItem><ListItemText primary="• Vulnerability scanning results" /></ListItem>
-                <ListItem><ListItemText primary="• Dependency security analysis" /></ListItem>
-                <ListItem><ListItemText primary="• Code security hotspots" /></ListItem>
-                <ListItem><ListItemText primary="• Compliance checking" /></ListItem>
-              </List>
-            </Alert>
-          </CardContent>
-        </Card>
+        <SecurityAnalytics repositoryId={parseInt(id!)} />
       </TabPanel>
 
       {/* Dependencies Tab */}
       <TabPanel value={tabValue} index={4}>
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Dependency Management
-            </Typography>
-            <Alert severity="info">
-              Advanced dependency analysis coming soon. This will include:
-              <List dense>
-                <ListItem><ListItemText primary="• Dependency tree visualization" /></ListItem>
-                <ListItem><ListItemText primary="• Outdated package tracking" /></ListItem>
-                <ListItem><ListItemText primary="• License compatibility analysis" /></ListItem>
-                <ListItem><ListItemText primary="• Bundle size impact assessment" /></ListItem>
-              </List>
-            </Alert>
-          </CardContent>
-        </Card>
+        <DependencyAnalytics repositoryId={parseInt(id!)} />
+      </TabPanel>
+
+      {/* Code Graph Tab */}
+      <TabPanel value={tabValue} index={5}>
+        <CodeGraphVisualization repositoryId={parseInt(id!)} />
       </TabPanel>
 
       {/* Analysis Configuration Dialog */}

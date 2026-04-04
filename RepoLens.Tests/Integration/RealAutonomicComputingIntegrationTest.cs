@@ -211,7 +211,7 @@ public class RealAutonomicComputingIntegrationTest : IDisposable
             LastAnalysisAt = DateTime.UtcNow,
             IsLocal = true,
             LocalPath = REPO_LOCAL_PATH,
-            Tags = ["autonomic-computing", "self-healing", "vocabulary-extraction", "intelligent-analysis", "real-time-metrics"],
+            Tags = "autonomic-computing,self-healing,vocabulary-extraction,intelligent-analysis,real-time-metrics",
             Notes = "Local autonomic computing repository with comprehensive code analysis and search capabilities"
         };
 
@@ -332,7 +332,7 @@ public class RealAutonomicComputingIntegrationTest : IDisposable
             try
             {
                 var relativePath = Path.GetRelativePath(REPO_LOCAL_PATH, filePath);
-                var fileInfo = new FileInfo(filePath);
+                var fileInfo = new System.IO.FileInfo(filePath);
                 var language = DetermineLanguageFromExtension(Path.GetExtension(filePath));
                 var content = await File.ReadAllTextAsync(filePath);
                 
@@ -576,7 +576,7 @@ public class RealAutonomicComputingIntegrationTest : IDisposable
                         Signature = trimmedLine,
                         StartLine = lineNumber,
                         EndLine = lineNumber + 50, // Estimate
-                        AccessModifier = DetermineAccessModifier(trimmedLine),
+                        AccessModifier = DetermineAccessModifierString(trimmedLine),
                         IsStatic = trimmedLine.Contains("static"),
                         IsAsync = false,
                         Parameters = JsonSerializer.Serialize(new { FileType = "C#", ElementKind = "Class" })
@@ -596,7 +596,7 @@ public class RealAutonomicComputingIntegrationTest : IDisposable
                         Signature = trimmedLine,
                         StartLine = lineNumber,
                         EndLine = lineNumber + 20, // Estimate
-                        AccessModifier = DetermineAccessModifier(trimmedLine),
+                        AccessModifier = DetermineAccessModifierString(trimmedLine),
                         IsStatic = false,
                         IsAsync = false,
                         Parameters = JsonSerializer.Serialize(new { FileType = "C#", ElementKind = "Interface" })
@@ -618,7 +618,7 @@ public class RealAutonomicComputingIntegrationTest : IDisposable
                         Signature = trimmedLine,
                         StartLine = lineNumber,
                         EndLine = lineNumber + 15, // Estimate
-                        AccessModifier = DetermineAccessModifier(trimmedLine),
+                        AccessModifier = DetermineAccessModifierString(trimmedLine),
                         IsStatic = trimmedLine.Contains("static"),
                         IsAsync = trimmedLine.Contains("async"),
                         Parameters = JsonSerializer.Serialize(new { FileType = "C#", ElementKind = "Method" })
@@ -915,8 +915,8 @@ public class RealAutonomicComputingIntegrationTest : IDisposable
         try
         {
             // Get sizes of files in current directory
-            FileInfo[] fileInfos = dirInfo.GetFiles();
-            foreach (FileInfo fileInfo in fileInfos)
+            System.IO.FileInfo[] fileInfos = dirInfo.GetFiles();
+            foreach (System.IO.FileInfo fileInfo in fileInfos)
             {
                 if (!IsIgnoredPath(fileInfo.FullName))
                 {
@@ -986,6 +986,15 @@ public class RealAutonomicComputingIntegrationTest : IDisposable
         if (line.Contains("protected")) return AccessModifier.Protected;
         if (line.Contains("internal")) return AccessModifier.Internal;
         return AccessModifier.Public;
+    }
+
+    private static string DetermineAccessModifierString(string line)
+    {
+        if (line.Contains("public")) return "public";
+        if (line.Contains("private")) return "private";
+        if (line.Contains("protected")) return "protected";
+        if (line.Contains("internal")) return "internal";
+        return "public";
     }
 
     private IServiceProvider SetupServices()

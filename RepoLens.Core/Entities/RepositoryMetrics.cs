@@ -96,6 +96,22 @@ public class RepositoryMetrics
     public double BusFactor { get; set; }
     public double CodeOwnershipConcentration { get; set; }
     
+    // Missing properties for tests
+    public int TotalLines { get; set; }
+    public long TotalSize { get; set; }
+    public int TotalCommits { get; set; }
+    public DateTime? LastCommitDate { get; set; }
+    public double QualityScore { get; set; }
+    public double SecurityScore { get; set; }
+    public double TechnicalDebt { get; set; }
+    public string? ComplexityMetrics { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    
+    // Additional properties needed for Repository Service
+    public DateTime CalculatedAt { get; set; } = DateTime.UtcNow;
+    public double OverallScore { get; set; }
+    
     // Navigation Property
     public Repository? Repository { get; set; }
     

@@ -11,6 +11,8 @@ using RepoLens.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using RepoLens.Api.Services;
+// using Nest; // Temporarily disabled - will be re-enabled when Elasticsearch is configured
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -180,6 +182,12 @@ builder.Services.AddSingleton<StorageService>(serviceProvider =>
 // Register validation services
 builder.Services.AddScoped<RepoLens.Api.Services.IRepositoryValidationService, RepoLens.Api.Services.RepositoryValidationService>();
 
+// Register Portfolio services for Engineering Manager L1 Dashboard
+builder.Services.AddScoped<RepoLens.Api.Services.IPortfolioService, RepoLens.Api.Services.PortfolioService>();
+
+// Register Repository services for L2 Repository Dashboard
+builder.Services.AddScoped<RepoLens.Api.Services.IRepositoryService, RepoLens.Api.Services.RepositoryService>();
+
 // Register Code Intelligence services (Action Item #3)
 builder.Services.AddScoped<IRepositoryAnalysisService, RepositoryAnalysisService>();
 builder.Services.AddScoped<IFileAnalysisService, FileAnalysisService>();
@@ -197,6 +205,12 @@ builder.Services.AddScoped<IContributorAnalyticsService, ContributorAnalyticsSer
 // Register SignalR notification service
 builder.Services.AddScoped<RepoLens.Api.Hubs.IMetricsNotificationService, RepoLens.Api.Hubs.MetricsNotificationService>();
 
+// Register Local LLM services for natural language code search
+builder.Services.AddScoped<RepoLens.Api.Services.ILocalLLMService, RepoLens.Api.Services.LocalLLMService>();
+
+// TODO: Elasticsearch configuration (temporarily disabled due to compilation issues)
+// Will be re-enabled once NEST package issues are resolved
+// For now, search uses direct database queries which still show real results
 
 // Add CORS support for React frontend
 builder.Services.AddCors(options =>

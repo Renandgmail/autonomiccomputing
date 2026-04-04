@@ -149,7 +149,7 @@ public class AddRepositoryCommandTests
         result.Repository.Should().BeNull();
 
         _mockRepositoryRepository.Verify(
-            r => r.AddAsync(It.IsAny<Repository>()), 
+            r => r.AddAsync(It.IsAny<Repository>(), It.IsAny<CancellationToken>()), 
             Times.Never);
     }
 
@@ -171,7 +171,7 @@ public class AddRepositoryCommandTests
         result.ErrorMessage.Should().Contain("Unable to access repository");
         
         _mockRepositoryRepository.Verify(
-            r => r.AddAsync(It.IsAny<Repository>()), 
+            r => r.AddAsync(It.IsAny<Repository>(), It.IsAny<CancellationToken>()), 
             Times.Never);
     }
 
@@ -188,7 +188,7 @@ public class AddRepositoryCommandTests
         
         SetupValidationSuccess();
         _mockRepositoryRepository
-            .Setup(r => r.GetByUrlAsync(request.Url))
+            .Setup(r => r.GetByUrlAsync(request.Url, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingRepo);
 
         _output.WriteLine("Testing duplicate repository detection");
@@ -202,7 +202,7 @@ public class AddRepositoryCommandTests
         
         VerifyLogging(LogLevel.Warning, Times.Once());
         _mockRepositoryRepository.Verify(
-            r => r.AddAsync(It.IsAny<Repository>()), 
+            r => r.AddAsync(It.IsAny<Repository>(), It.IsAny<CancellationToken>()), 
             Times.Never);
     }
 
@@ -221,7 +221,7 @@ public class AddRepositoryCommandTests
         SetupRepositoryNotExists();
         
         _mockRepositoryRepository
-            .Setup(r => r.AddAsync(It.IsAny<Repository>()))
+            .Setup(r => r.AddAsync(It.IsAny<Repository>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(exception);
 
         _output.WriteLine("Testing exception handling during repository creation");
@@ -270,7 +270,7 @@ public class AddRepositoryCommandTests
     private void SetupRepositoryNotExists()
     {
         _mockRepositoryRepository
-            .Setup(r => r.GetByUrlAsync(It.IsAny<string>()))
+            .Setup(r => r.GetByUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Repository?)null);
     }
 
@@ -278,7 +278,7 @@ public class AddRepositoryCommandTests
     {
         _mockRepositoryRepository
             .Setup(r => r.AddAsync(It.IsAny<Repository>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Repository repo, CancellationToken ct) =>
+            .ReturnsAsync((Repository repo) =>
             {
                 repo.Id = 123; // Simulate database assignment
                 return repo;
@@ -291,7 +291,7 @@ public class AddRepositoryCommandTests
             r => r.AddAsync(It.Is<Repository>(repo => 
                 repo.Url == "https://github.com/user/repo.git" &&
                 repo.LastSyncCommit == string.Empty &&
-                repo.CreatedAt != default)), 
+                repo.CreatedAt != default), It.IsAny<CancellationToken>()), 
             Times.Once);
     }
 
@@ -340,10 +340,10 @@ public class AddRepositoryCommandPerformanceTests
                      .ReturnsAsync(true);
         mockValidation.Setup(v => v.DetectProviderType(It.IsAny<string>()))
                      .Returns(ProviderType.GitHub);
-        mockRepo.Setup(r => r.GetByUrlAsync(It.IsAny<string>()))
+        mockRepo.Setup(r => r.GetByUrlAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Repository?)null);
         mockRepo.Setup(r => r.AddAsync(It.IsAny<Repository>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((Repository repo, CancellationToken ct) => repo);
+                .ReturnsAsync((Repository repo) => repo);
 
         // Act
         var startTime = DateTime.UtcNow;

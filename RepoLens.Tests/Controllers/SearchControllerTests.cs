@@ -72,7 +72,7 @@ public class SearchControllerTests
     public async Task GetSuggestions_WithEmptyQuery_ReturnsBadRequest()
     {
         // Act
-        var result = await _controller.GetSuggestions("", null);
+        var result = await _controller.GetSuggestions("", 1);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);

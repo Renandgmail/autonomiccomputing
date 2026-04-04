@@ -266,8 +266,14 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<int>("EndLine")
                         .HasColumnType("integer");
 
+                    b.Property<string>("File")
+                        .HasColumnType("text");
+
                     b.Property<int>("FileId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("FullContent")
+                        .HasColumnType("text");
 
                     b.Property<string>("FullyQualifiedName")
                         .HasMaxLength(1000)
@@ -343,6 +349,13 @@ namespace RepoLens.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("Additions")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("AvatarUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<double>("AverageCommitSize")
                         .HasColumnType("double precision");
 
@@ -380,14 +393,24 @@ namespace RepoLens.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<int>("CurrentCommitStreak")
                         .HasColumnType("integer");
 
                     b.Property<int>("DaysActive")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Deletions")
+                        .HasColumnType("integer");
+
                     b.Property<int>("DocumentationCommits")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("FeatureCommits")
                         .HasColumnType("integer");
@@ -398,11 +421,17 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<int>("FilesAdded")
                         .HasColumnType("integer");
 
+                    b.Property<int>("FilesChanged")
+                        .HasColumnType("integer");
+
                     b.Property<int>("FilesDeleted")
                         .HasColumnType("integer");
 
                     b.Property<int>("FilesModified")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("FirstCommit")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("FirstContribution")
                         .HasColumnType("timestamp with time zone");
@@ -416,6 +445,9 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<bool>("IsNewContributor")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsPrimaryContributor")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("IssuesCreated")
                         .HasColumnType("integer");
 
@@ -424,6 +456,12 @@ namespace RepoLens.Infrastructure.Migrations
 
                     b.Property<string>("LanguageContributions")
                         .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastCommit")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastCommitAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("LastContribution")
                         .HasColumnType("timestamp with time zone");
@@ -445,6 +483,10 @@ namespace RepoLens.Infrastructure.Migrations
 
                     b.Property<string>("MonthlyActivityPattern")
                         .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("OwnedFiles")
                         .HasColumnType("integer");
@@ -472,6 +514,9 @@ namespace RepoLens.Infrastructure.Migrations
 
                     b.Property<int>("UniqueFilesTouched")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("WeeklyActivityPattern")
                         .HasColumnType("TEXT");
@@ -791,6 +836,9 @@ namespace RepoLens.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<bool>("IsLocal")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPrivate")
                         .HasColumnType("boolean");
 
@@ -803,10 +851,16 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<string>("LastSyncCommit")
                         .HasColumnType("text");
 
+                    b.Property<string>("LocalPath")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
 
                     b.Property<int?>("OrganizationId")
                         .HasColumnType("integer");
@@ -832,6 +886,9 @@ namespace RepoLens.Infrastructure.Migrations
 
                     b.Property<int>("SyncIntervalMinutes")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("text");
 
                     b.Property<DateTime?>("TokenExpiresAt")
                         .HasColumnType("timestamp with time zone");
@@ -877,8 +934,14 @@ namespace RepoLens.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Content")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CyclomaticComplexity")
+                        .HasColumnType("integer");
 
                     b.Property<string>("FileExtension")
                         .IsRequired()
@@ -923,6 +986,9 @@ namespace RepoLens.Infrastructure.Migrations
 
                     b.Property<int>("RepositoryId")
                         .HasColumnType("integer");
+
+                    b.Property<double?>("TestCoveragePercentage")
+                        .HasColumnType("double precision");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -985,6 +1051,9 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<double>("BusFactor")
                         .HasColumnType("double precision");
 
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<double>("CodeOwnershipConcentration")
                         .HasColumnType("double precision");
 
@@ -1008,6 +1077,12 @@ namespace RepoLens.Infrastructure.Migrations
 
                     b.Property<int>("CommitsLastWeek")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ComplexityMetrics")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("CriticalVulnerabilities")
                         .HasColumnType("integer");
@@ -1048,6 +1123,9 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<string>("LanguageDistribution")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("LastCommitDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<double>("LineCoveragePercentage")
                         .HasColumnType("double precision");
 
@@ -1072,8 +1150,14 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<int>("OutdatedDependencies")
                         .HasColumnType("integer");
 
+                    b.Property<double>("OverallScore")
+                        .HasColumnType("double precision");
+
                     b.Property<int>("QualityGateFailures")
                         .HasColumnType("integer");
+
+                    b.Property<double>("QualityScore")
+                        .HasColumnType("double precision");
 
                     b.Property<int>("ReadmeWordCount")
                         .HasColumnType("integer");
@@ -1084,8 +1168,14 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<long>("RepositorySizeBytes")
                         .HasColumnType("bigint");
 
+                    b.Property<double>("SecurityScore")
+                        .HasColumnType("double precision");
+
                     b.Property<int>("SecurityVulnerabilities")
                         .HasColumnType("integer");
+
+                    b.Property<double>("TechnicalDebt")
+                        .HasColumnType("double precision");
 
                     b.Property<double>("TechnicalDebtHours")
                         .HasColumnType("double precision");
@@ -1102,6 +1192,9 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<int>("TotalClasses")
                         .HasColumnType("integer");
 
+                    b.Property<int>("TotalCommits")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TotalContributors")
                         .HasColumnType("integer");
 
@@ -1114,11 +1207,20 @@ namespace RepoLens.Infrastructure.Migrations
                     b.Property<int>("TotalFiles")
                         .HasColumnType("integer");
 
+                    b.Property<int>("TotalLines")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TotalLinesOfCode")
                         .HasColumnType("integer");
 
                     b.Property<int>("TotalMethods")
                         .HasColumnType("integer");
+
+                    b.Property<long>("TotalSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("VulnerableDependencies")
                         .HasColumnType("integer");

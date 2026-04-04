@@ -76,6 +76,22 @@ public class ContributorMetrics
     public int DaysActive { get; set; }
     public double RetentionScore { get; set; }
     
+    // Additional properties for backward compatibility
+    public string Name { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public int FilesChanged { get; set; }
+    public DateTime FirstCommit { get; set; }
+    public DateTime LastCommit { get; set; }
+    public int Additions { get; set; }
+    public int Deletions { get; set; }
+    public string AvatarUrl { get; set; } = string.Empty;
+    public bool IsPrimaryContributor { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    
+    // Additional properties needed for Repository Service
+    public DateTime LastCommitAt { get; set; } = DateTime.UtcNow;
+    
     // Navigation Properties
     public Repository? Repository { get; set; }
     

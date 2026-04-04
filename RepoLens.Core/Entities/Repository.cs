@@ -40,6 +40,12 @@ public class Repository
     public int TotalLines { get; set; }
     public string? ScanErrorMessage { get; set; }
     
+    // Missing properties for tests
+    public bool IsLocal { get; set; } = false;
+    public string? LocalPath { get; set; }
+    public string? Tags { get; set; }
+    public string? Notes { get; set; }
+    
     // Navigation properties
     public virtual User? Owner { get; set; }
     public virtual Organization? Organization { get; set; }
