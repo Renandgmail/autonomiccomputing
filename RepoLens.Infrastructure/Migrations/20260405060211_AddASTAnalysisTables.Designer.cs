@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RepoLens.Infrastructure;
@@ -11,9 +12,11 @@ using RepoLens.Infrastructure;
 namespace RepoLens.Infrastructure.Migrations
 {
     [DbContext(typeof(RepoLensDbContext))]
-    partial class RepoLensDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260405060211_AddASTAnalysisTables")]
+    partial class AddASTAnalysisTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

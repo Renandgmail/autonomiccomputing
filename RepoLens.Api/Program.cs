@@ -152,9 +152,7 @@ builder.Services.AddScoped<IGitHubApiService, GitHubApiService>();
 // Register all Git provider implementations
 builder.Services.AddScoped<IGitProviderService, RepoLens.Infrastructure.Providers.GitHubProviderService>();
 builder.Services.AddScoped<IGitProviderService, RepoLens.Infrastructure.Providers.LocalProviderService>();
-builder.Services.AddScoped<IGitProviderService, RepoLens.Infrastructure.Providers.GitLabProviderService>();
-builder.Services.AddScoped<IGitProviderService, RepoLens.Infrastructure.Providers.BitbucketProviderService>();
-builder.Services.AddScoped<IGitProviderService, RepoLens.Infrastructure.Providers.AzureDevOpsProviderService>();
+// Removed GitLab, Bitbucket, and Azure DevOps providers - they only had NotImplemented methods
 
 // Register Git provider factory
 builder.Services.AddScoped<IGitProviderFactory, RepoLens.Infrastructure.Providers.GitProviderFactory>();
@@ -195,8 +193,8 @@ builder.Services.AddScoped<IFileAnalysisService, FileAnalysisService>();
 // Register Natural Language Query services (Action Item #4)
 builder.Services.AddScoped<IQueryProcessingService, QueryProcessingService>();
 
-// Register Vocabulary Extraction services (Action Item #5)
-builder.Services.AddScoped<IVocabularyExtractionService, VocabularyExtractionService>();
+// Vocabulary Extraction services removed - all methods had NotImplementedException
+// Vocabulary functionality will be integrated into enhanced search instead
 
 // Register Advanced Analytics services (Phase 7 - GAP-ANALYTICS)
 builder.Services.AddScoped<IFileMetricsService, FileMetricsService>();
@@ -207,6 +205,12 @@ builder.Services.AddScoped<RepoLens.Api.Hubs.IMetricsNotificationService, RepoLe
 
 // Register Local LLM services for natural language code search
 builder.Services.AddScoped<RepoLens.Api.Services.ILocalLLMService, RepoLens.Api.Services.LocalLLMService>();
+
+// Register AST Analysis services (Phase 2)
+builder.Services.AddScoped<RepoLens.Api.Services.TypeScriptASTService>();
+builder.Services.AddScoped<RepoLens.Api.Services.CSharpASTService>();
+builder.Services.AddScoped<RepoLens.Api.Services.PythonASTService>();
+builder.Services.AddScoped<RepoLens.Core.Services.IASTRepositoryService, RepoLens.Infrastructure.Repositories.ASTRepositoryService>();
 
 // TODO: Elasticsearch configuration (temporarily disabled due to compilation issues)
 // Will be re-enabled once NEST package issues are resolved

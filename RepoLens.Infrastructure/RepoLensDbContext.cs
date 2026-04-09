@@ -34,6 +34,22 @@ public class RepoLensDbContext(DbContextOptions<RepoLensDbContext> options)
     public DbSet<BusinessConcept> BusinessConcepts => Set<BusinessConcept>();
     public DbSet<VocabularyStats> VocabularyStats => Set<VocabularyStats>();
 
+    // AST Analysis entities (Phase 2)
+    public DbSet<ASTRepositoryAnalysis> ASTRepositoryAnalyses => Set<ASTRepositoryAnalysis>();
+    public DbSet<ASTFileAnalysis> ASTFileAnalyses => Set<ASTFileAnalysis>();
+    public DbSet<ASTStatement> ASTStatements => Set<ASTStatement>();
+    public DbSet<ASTClass> ASTClasses => Set<ASTClass>();
+    public DbSet<ASTMethod> ASTMethods => Set<ASTMethod>();
+    public DbSet<ASTProperty> ASTProperties => Set<ASTProperty>();
+    public DbSet<ASTParameter> ASTParameters => Set<ASTParameter>();
+    public DbSet<ASTImport> ASTImports => Set<ASTImport>();
+    public DbSet<ASTExport> ASTExports => Set<ASTExport>();
+    public DbSet<ASTIssue> ASTIssues => Set<ASTIssue>();
+    public DbSet<DuplicateCodeBlock> DuplicateCodeBlocks => Set<DuplicateCodeBlock>();
+    public DbSet<ASTDependency> ASTDependencies => Set<ASTDependency>();
+    public DbSet<ASTMetrics> ASTMetrics => Set<ASTMetrics>();
+    public DbSet<ASTFileMetrics> ASTFileMetrics => Set<ASTFileMetrics>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Call base configuration for Identity
@@ -460,6 +476,283 @@ public class RepoLensDbContext(DbContextOptions<RepoLensDbContext> options)
             entity.HasOne(vs => vs.Repository)
                   .WithMany()
                   .HasForeignKey(vs => vs.RepositoryId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure AST Analysis entities (Phase 2)
+        modelBuilder.Entity<ASTRepositoryAnalysis>(entity =>
+        {
+            entity.HasKey(ara => ara.Id);
+            entity.HasIndex(ara => ara.RepositoryId).IsUnique();
+            entity.HasIndex(ara => ara.AnalyzedAt);
+            entity.Property(ara => ara.Version).HasMaxLength(50);
+            
+            entity.HasOne(ara => ara.Repository)
+                  .WithMany()
+                  .HasForeignKey(ara => ara.RepositoryId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTFileAnalysis>(entity =>
+        {
+            entity.HasKey(afa => afa.Id);
+            entity.HasIndex(afa => afa.RepositoryAnalysisId);
+            entity.HasIndex(afa => afa.FilePath);
+            entity.HasIndex(afa => afa.Language);
+            entity.HasIndex(afa => afa.IsSupported);
+            
+            entity.Property(afa => afa.FilePath).IsRequired().HasMaxLength(1000);
+            entity.Property(afa => afa.Language).HasMaxLength(50);
+            
+            entity.HasOne(afa => afa.RepositoryAnalysis)
+                  .WithMany(ara => ara.Files)
+                  .HasForeignKey(afa => afa.RepositoryAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTStatement>(entity =>
+        {
+            entity.HasKey(s => s.Id);
+            entity.HasIndex(s => s.FileAnalysisId);
+            entity.HasIndex(s => s.Type);
+            entity.HasIndex(s => s.Line);
+            
+            entity.Property(s => s.StatementId).IsRequired().HasMaxLength(100);
+            entity.Property(s => s.Type).IsRequired().HasMaxLength(100);
+            entity.Property(s => s.CodeSnippet).HasMaxLength(2000);
+            
+            // Configure JSON column
+            entity.Property(s => s.Dependencies)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+                  
+            entity.HasOne(s => s.FileAnalysis)
+                  .WithMany(afa => afa.Statements)
+                  .HasForeignKey(s => s.FileAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTClass>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasIndex(c => c.FileAnalysisId);
+            entity.HasIndex(c => c.Name);
+            entity.HasIndex(c => c.IsAbstract);
+            entity.HasIndex(c => c.IsInterface);
+            
+            entity.Property(c => c.Name).IsRequired().HasMaxLength(255);
+            entity.Property(c => c.FullName).HasMaxLength(500);
+            entity.Property(c => c.AccessModifier).HasMaxLength(50);
+            entity.Property(c => c.BaseClass).HasMaxLength(255);
+            
+            // Configure JSON columns
+            entity.Property(c => c.Interfaces)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+                  
+            entity.HasOne(c => c.FileAnalysis)
+                  .WithMany(afa => afa.Classes)
+                  .HasForeignKey(c => c.FileAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTMethod>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.HasIndex(m => m.FileAnalysisId);
+            entity.HasIndex(m => m.ClassId);
+            entity.HasIndex(m => m.Name);
+            entity.HasIndex(m => m.IsStatic);
+            entity.HasIndex(m => m.IsAsync);
+            entity.HasIndex(m => m.CyclomaticComplexity);
+            
+            entity.Property(m => m.Name).IsRequired().HasMaxLength(255);
+            entity.Property(m => m.Signature).HasMaxLength(1000);
+            entity.Property(m => m.AccessModifier).HasMaxLength(50);
+            entity.Property(m => m.ReturnType).HasMaxLength(255);
+            
+            // Configure JSON column
+            entity.Property(m => m.CalledMethods)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+                  
+            entity.HasOne(m => m.FileAnalysis)
+                  .WithMany(afa => afa.Methods)
+                  .HasForeignKey(m => m.FileAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasOne(m => m.Class)
+                  .WithMany(c => c.Methods)
+                  .HasForeignKey(m => m.ClassId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ASTProperty>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.HasIndex(p => p.ClassId);
+            entity.HasIndex(p => p.Name);
+            entity.HasIndex(p => p.IsStatic);
+            
+            entity.Property(p => p.Name).IsRequired().HasMaxLength(255);
+            entity.Property(p => p.Type).IsRequired().HasMaxLength(255);
+            entity.Property(p => p.AccessModifier).HasMaxLength(50);
+            
+            entity.HasOne(p => p.Class)
+                  .WithMany(c => c.Properties)
+                  .HasForeignKey(p => p.ClassId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTParameter>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.HasIndex(p => p.MethodId);
+            entity.HasIndex(p => p.Position);
+            
+            entity.Property(p => p.Name).IsRequired().HasMaxLength(255);
+            entity.Property(p => p.Type).IsRequired().HasMaxLength(255);
+            entity.Property(p => p.DefaultValue).HasMaxLength(500);
+            
+            entity.HasOne(p => p.Method)
+                  .WithMany(m => m.Parameters)
+                  .HasForeignKey(p => p.MethodId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTImport>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.HasIndex(i => i.FileAnalysisId);
+            entity.HasIndex(i => i.Module);
+            entity.HasIndex(i => i.IsDefaultImport);
+            entity.HasIndex(i => i.IsNamespaceImport);
+            
+            entity.Property(i => i.Module).IsRequired().HasMaxLength(500);
+            
+            // Configure JSON column
+            entity.Property(i => i.ImportedSymbols)
+                  .HasConversion(
+                      v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                      v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
+                  .HasColumnType("TEXT");
+                  
+            entity.HasOne(i => i.FileAnalysis)
+                  .WithMany(afa => afa.Imports)
+                  .HasForeignKey(i => i.FileAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTExport>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.FileAnalysisId);
+            entity.HasIndex(e => e.Name);
+            entity.HasIndex(e => e.Type);
+            entity.HasIndex(e => e.IsDefault);
+            
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.Type).IsRequired().HasMaxLength(100);
+            
+            entity.HasOne(e => e.FileAnalysis)
+                  .WithMany(afa => afa.Exports)
+                  .HasForeignKey(e => e.FileAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTIssue>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.HasIndex(i => i.FileAnalysisId);
+            entity.HasIndex(i => i.MethodId);
+            entity.HasIndex(i => i.Severity);
+            entity.HasIndex(i => i.Category);
+            entity.HasIndex(i => i.RuleId);
+            
+            entity.Property(i => i.Severity).IsRequired().HasMaxLength(50);
+            entity.Property(i => i.IssueType).IsRequired().HasMaxLength(255);
+            entity.Property(i => i.Category).IsRequired().HasMaxLength(100);
+            entity.Property(i => i.Description).IsRequired().HasMaxLength(2000);
+            entity.Property(i => i.Recommendation).HasMaxLength(2000);
+            entity.Property(i => i.RuleId).HasMaxLength(100);
+            entity.Property(i => i.MoreInfoUrl).HasMaxLength(500);
+            
+            entity.HasOne(i => i.FileAnalysis)
+                  .WithMany(afa => afa.Issues)
+                  .HasForeignKey(i => i.FileAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasOne(i => i.Method)
+                  .WithMany(m => m.Issues)
+                  .HasForeignKey(i => i.MethodId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<DuplicateCodeBlock>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+            entity.HasIndex(d => d.RepositoryAnalysisId);
+            entity.HasIndex(d => d.GroupId);
+            entity.HasIndex(d => d.SimilarityScore);
+            entity.HasIndex(d => d.DuplicateType);
+            
+            entity.Property(d => d.GroupId).IsRequired().HasMaxLength(100);
+            entity.Property(d => d.FilePath).IsRequired().HasMaxLength(1000);
+            entity.Property(d => d.Hash).HasMaxLength(100);
+            entity.Property(d => d.DuplicateType).HasMaxLength(100);
+            entity.Property(d => d.CodeBlock).HasMaxLength(10000);
+            
+            entity.HasOne(d => d.RepositoryAnalysis)
+                  .WithMany(ara => ara.DuplicateBlocks)
+                  .HasForeignKey(d => d.RepositoryAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTDependency>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+            entity.HasIndex(d => d.RepositoryAnalysisId);
+            entity.HasIndex(d => d.SourceFile);
+            entity.HasIndex(d => d.TargetFile);
+            entity.HasIndex(d => d.DependencyType);
+            entity.HasIndex(d => d.IsCircular);
+            
+            entity.Property(d => d.SourceFile).IsRequired().HasMaxLength(1000);
+            entity.Property(d => d.TargetFile).IsRequired().HasMaxLength(1000);
+            entity.Property(d => d.DependencyType).IsRequired().HasMaxLength(100);
+            
+            entity.HasOne(d => d.RepositoryAnalysis)
+                  .WithMany(ara => ara.Dependencies)
+                  .HasForeignKey(d => d.RepositoryAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTMetrics>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.HasIndex(m => m.RepositoryAnalysisId).IsUnique();
+            
+            entity.HasOne(m => m.RepositoryAnalysis)
+                  .WithOne(ara => ara.Metrics)
+                  .HasForeignKey<ASTMetrics>(m => m.RepositoryAnalysisId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ASTFileMetrics>(entity =>
+        {
+            entity.HasKey(m => m.Id);
+            entity.HasIndex(m => m.FileAnalysisId).IsUnique();
+            entity.Property(m => m.QualityTrend).HasMaxLength(50);
+            
+            entity.HasOne(m => m.FileAnalysis)
+                  .WithOne(afa => afa.Metrics)
+                  .HasForeignKey<ASTFileMetrics>(m => m.FileAnalysisId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
     }

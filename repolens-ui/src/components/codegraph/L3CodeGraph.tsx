@@ -118,50 +118,50 @@ const L3CodeGraph: React.FC<L3CodeGraphProps> = ({ repositoryId: propRepositoryI
       setLoading(true);
       setError(null);
       
-      // Try to load from API first
+      // Load real data from backend API
       const data = await apiService.getCodeGraph(repositoryId!);
       
-      if (data?.nodes?.length > 0) {
+      // Handle backend response structure correctly
+      if (data && Array.isArray(data.nodes)) {
         setNodes(data.nodes);
-        setEdges(data.edges);
+        setEdges(data.edges || []);
+        console.log('✅ Code graph loaded successfully from backend', { 
+          nodeCount: data.nodes.length, 
+          edgeCount: (data.edges || []).length 
+        });
+      } else if (data && data.nodes && data.nodes.length === 0) {
+        // Backend returned empty result - repository has no analyzable files
+        setNodes([]);
+        setEdges([]);
+        setError('No code graph data available for this repository. Repository may be empty or analysis is pending.');
       } else {
-        // Generate realistic mock data for demonstration
-        generateMockCodeGraph();
+        // Backend returned unexpected structure
+        console.error('Unexpected backend response structure:', data);
+        setError('Code graph data is not available in expected format. Please try again or contact support.');
+        setNodes([]);
+        setEdges([]);
       }
-    } catch (err) {
-      console.error('Error loading code graph:', err);
-      generateMockCodeGraph(); // Fallback to mock data
+    } catch (err: any) {
+      console.error('❌ Failed to load code graph from backend:', err);
+      
+      // Production-ready error handling - no mock data fallback
+      if (err.response?.status === 404) {
+        setError('Repository not found. Please check the repository ID.');
+      } else if (err.response?.status === 500) {
+        setError('Server error occurred while generating code graph. Please try again later.');
+      } else if (err.message?.includes('timeout')) {
+        setError('Code graph generation timed out. This may happen for large repositories. Please try again.');
+      } else {
+        setError(`Failed to load code graph: ${err.message || 'Unknown error occurred'}`);
+      }
+      
+      setNodes([]);
+      setEdges([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockCodeGraph = () => {
-    // Generate mock nodes following L3 specification format
-    const mockNodes: CodeNode[] = [
-      // Files
-      { id: 'f1', name: 'AuthService.ts', type: 'file', filePath: 'src/auth/AuthService.ts', complexity: 7.2, quality: 92, dependenciesIn: 3, dependenciesOut: 5, lastChanged: '2 days ago', issues: { critical: 0, high: 0, medium: 1, low: 2 } },
-      { id: 'f2', name: 'UserController.cs', type: 'file', filePath: 'Controllers/UserController.cs', complexity: 8.5, quality: 78, dependenciesIn: 2, dependenciesOut: 4, lastChanged: '1 week ago', issues: { critical: 1, high: 2, medium: 0, low: 1 } },
-      { id: 'f3', name: 'DatabaseConfig.ts', type: 'file', filePath: 'src/config/DatabaseConfig.ts', complexity: 4.1, quality: 95, dependenciesIn: 8, dependenciesOut: 1, lastChanged: '3 days ago', issues: { critical: 0, high: 0, medium: 0, low: 0 } },
-      { id: 'f4', name: 'PaymentService.ts', type: 'file', filePath: 'src/services/PaymentService.ts', complexity: 9.3, quality: 65, dependenciesIn: 1, dependenciesOut: 6, lastChanged: '5 days ago', issues: { critical: 2, high: 1, medium: 3, low: 2 } },
-      { id: 'f5', name: 'OrphanUtil.ts', type: 'file', filePath: 'src/utils/OrphanUtil.ts', complexity: 2.1, quality: 88, dependenciesIn: 0, dependenciesOut: 0, lastChanged: '2 weeks ago', issues: { critical: 0, high: 0, medium: 0, low: 1 }, isOrphan: true },
-      { id: 'f6', name: 'CircularA.ts', type: 'file', filePath: 'src/circular/CircularA.ts', complexity: 6.0, quality: 70, dependenciesIn: 1, dependenciesOut: 1, lastChanged: '4 days ago', issues: { critical: 0, high: 1, medium: 0, low: 0 }, isInCircularDep: true },
-      { id: 'f7', name: 'CircularB.ts', type: 'file', filePath: 'src/circular/CircularB.ts', complexity: 5.8, quality: 72, dependenciesIn: 1, dependenciesOut: 1, lastChanged: '4 days ago', issues: { critical: 0, high: 1, medium: 0, low: 0 }, isInCircularDep: true },
-    ];
-
-    const mockEdges: CodeEdge[] = [
-      { source: 'f1', target: 'f3', type: 'imports' },
-      { source: 'f2', target: 'f1', type: 'imports' },
-      { source: 'f2', target: 'f3', type: 'imports' },
-      { source: 'f4', target: 'f1', type: 'imports' },
-      { source: 'f4', target: 'f3', type: 'imports' },
-      { source: 'f6', target: 'f7', type: 'imports', isCircular: true },
-      { source: 'f7', target: 'f6', type: 'imports', isCircular: true },
-    ];
-
-    setNodes(mockNodes);
-    setEdges(mockEdges);
-  };
 
   // Filter nodes based on search and file type
   const filteredNodes = nodes.filter(node => {
@@ -402,6 +402,47 @@ const L3CodeGraph: React.FC<L3CodeGraphProps> = ({ repositoryId: propRepositoryI
         {loading ? (
           <Box display="flex" alignItems="center" justifyContent="center" height="100%">
             <Typography>Loading code graph...</Typography>
+          </Box>
+        ) : error ? (
+          <Box 
+            display="flex" 
+            flexDirection="column" 
+            alignItems="center" 
+            justifyContent="center" 
+            height="100%"
+            sx={{ p: 4, textAlign: 'center' }}
+          >
+            <Alert severity="error" sx={{ mb: 3, maxWidth: 600 }}>
+              {error}
+            </Alert>
+            <Button 
+              variant="outlined" 
+              onClick={loadCodeGraph}
+              sx={{ mt: 2 }}
+            >
+              Retry
+            </Button>
+          </Box>
+        ) : nodes.length === 0 ? (
+          <Box 
+            display="flex" 
+            flexDirection="column" 
+            alignItems="center" 
+            justifyContent="center" 
+            height="100%"
+            sx={{ p: 4, textAlign: 'center' }}
+          >
+            <Alert severity="info" sx={{ mb: 3, maxWidth: 600 }}>
+              No code graph data available for this repository. 
+              The repository may be empty or analysis may be pending.
+            </Alert>
+            <Button 
+              variant="outlined" 
+              onClick={loadCodeGraph}
+              sx={{ mt: 2 }}
+            >
+              Check Again
+            </Button>
           </Box>
         ) : (
           <ForceGraph2D

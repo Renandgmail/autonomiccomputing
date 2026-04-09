@@ -1,7 +1,7 @@
 {
   "development": {
     "api": {
-      "baseUrl": "http://localhost:5179",
+      "baseUrl": "http://localhost:5000",
       "timeout": 30000,
       "retryAttempts": 3
     },

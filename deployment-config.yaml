@@ -1,0 +1,164 @@
+# CodeLens Platform - Flexible Deployment Configuration
+# Supports native, Docker, and Kubernetes deployment modes
+
+deployment:
+  mode: "native"  # Options: native, docker, kubernetes, hybrid
+  environment: "development"  # development, staging, production
+  
+database:
+  type: "postgresql"
+  host: "localhost"
+  port: 5432
+  database: "codelens_platform"
+  username: "postgres"
+  password: "password123"
+  
+services:
+  # Main API Service (Monolith during migration)
+  api:
+    name: "CodeLens.Api"
+    deployment_type: "native"  # native, docker, kubernetes
+    port: 5000
+    ssl_port: 5001
+    replicas: 1
+    health_check: "/health"
+    startup_command: "dotnet run --project CodeLens.Api --urls=https://localhost:5001;http://localhost:5000"
+    
+  # Worker Service
+  worker:
+    name: "CodeLens.Worker"
+    deployment_type: "native"
+    port: 5010
+    replicas: 1
+    health_check: "/health"
+    startup_command: "dotnet run --project CodeLens.Worker --urls=http://localhost:5010"
+    
+  # Frontend
+  frontend:
+    name: "CodeLens.UI"
+    deployment_type: "native"
+    port: 3000
+    path: "repolens-ui"
+    startup_command: "npm start"
+    build_command: "npm run build"
+    
+  # Future Microservices (Configurable)
+  auth_service:
+    name: "CodeLens.Auth"
+    deployment_type: "native"
+    port: 5100
+    replicas: 1
+    enabled: false  # Set to true when extracted
+    database: "codelens_auth"
+    startup_command: "dotnet run --project CodeLens.Auth --urls=http://localhost:5100"
+    
+  ast_analysis_service:
+    name: "CodeLens.ASTAnalysis"
+    deployment_type: "docker"  # CPU intensive - better isolated
+    port: 5200
+    replicas: 2
+    enabled: false
+    database: "codelens_ast"
+    auto_scaling:
+      enabled: true
+      min_replicas: 1
+      max_replicas: 5
+      cpu_threshold: 70
+    
+  portfolio_service:
+    name: "CodeLens.Portfolio"
+    deployment_type: "native"
+    port: 5300
+    replicas: 1
+    enabled: false
+    database: "codelens_portfolio"
+    
+  repository_service:
+    name: "CodeLens.Repository"
+    deployment_type: "native"
+    port: 5400
+    replicas: 1
+    enabled: false
+    database: "codelens_repository"
+    
+  search_service:
+    name: "CodeLens.Search"
+    deployment_type: "docker"  # Elasticsearch integration
+    port: 5500
+    replicas: 1
+    enabled: false
+    database: "codelens_search"
+    dependencies:
+      - "elasticsearch"
+    
+  analytics_service:
+    name: "CodeLens.Analytics"
+    deployment_type: "docker"  # ClickHouse integration
+    port: 5600
+    replicas: 1
+    enabled: false
+    database: "codelens_analytics"
+    dependencies:
+      - "clickhouse"
+    
+  file_service:
+    name: "CodeLens.Files"
+    deployment_type: "native"
+    port: 5700
+    replicas: 1
+    enabled: false
+    database: "codelens_files"
+
+# Infrastructure Components (Optional)
+infrastructure:
+  api_gateway:
+    enabled: false  # Set to true for microservices
+    type: "native"  # native (Ocelot), docker (Kong), kubernetes (Istio)
+    port: 8080
+    
+  service_discovery:
+    enabled: false
+    type: "consul"  # consul, eureka, none
+    port: 8500
+    
+  monitoring:
+    enabled: false
+    type: "native"  # native (ASP.NET metrics), docker (Prometheus), kubernetes
+    prometheus_port: 9090
+    grafana_port: 3001
+
+# Development Tools
+development:
+  hot_reload: true
+  watch_files: true
+  auto_migrate_db: true
+  seed_data: true
+  cors_origins:
+    - "http://localhost:3000"
+    - "https://localhost:3001"
+
+# Production Overrides
+production:
+  database:
+    host: "${DB_HOST}"
+    password: "${DB_PASSWORD}"
+  services:
+    api:
+      replicas: 3
+    worker:
+      replicas: 2
+  infrastructure:
+    api_gateway:
+      enabled: true
+    monitoring:
+      enabled: true
+      
+# Docker Overrides (when Docker is available)
+docker:
+  network: "codelens-network"
+  volumes:
+    database: "codelens-db-data"
+    logs: "codelens-logs"
+  build:
+    context: "."
+    dockerfile: "Dockerfile"

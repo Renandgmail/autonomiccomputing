@@ -12,6 +12,7 @@ import {
   User
 } from '../types/api';
 import ConfigService from '../config/ConfigService';
+import { errorService, handleApiError } from './errorService';
 
 class ApiService {
   private api: AxiosInstance;
@@ -71,29 +72,14 @@ class ApiService {
           response: error.response?.data
         });
         
-        if (error.response?.status === 401) {
-          this.log('🔒 Unauthorized response received', { 
-            url: error.config?.url,
-            currentPath: window.location.pathname 
-          });
-          
-          // Only redirect if we're not already on login page and not during initial load
-          if (!window.location.pathname.includes('/login') && 
-              !window.location.pathname.includes('/register')) {
-            this.log('🔒 Clearing auth and redirecting to login');
-            this.clearAuth();
-            // Use React Router navigation instead of hard redirect when possible
-            if (window.history && window.history.pushState) {
-              window.history.pushState({}, '', '/login');
-              window.dispatchEvent(new PopStateEvent('popstate'));
-            } else {
-              window.location.href = '/login';
-            }
-          } else {
-            this.log('🔒 Already on auth page, clearing auth only');
-            this.clearAuth();
-          }
-        }
+        // Use enhanced error service for error handling
+        const appError = handleApiError(error, {
+          component: 'ApiService',
+          operation: 'api_request',
+          endpoint: error.config?.url
+        });
+        
+        // The error service will handle authentication errors automatically
         return Promise.reject(error);
       }
     );
@@ -711,19 +697,21 @@ class ApiService {
     };
   }
 
-  // Natural Language Search API methods with fallback for demo mode
+  // Natural Language Search API methods - production ready
   async processNaturalLanguageQuery(query: string, repositoryId?: number, maxResults?: number): Promise<any> {
     try {
-      const response = await this.api.post<ApiResponse<any>>('/api/search/query', {
+      // Fix: Use correct backend endpoint for Natural Language Search
+      const response = await this.api.post<ApiResponse<any>>('/api/NaturalLanguageSearch', {
         query,
         repositoryId,
-        maxResults: maxResults || 50
+        page: 1,
+        pageSize: maxResults || 50
       });
       return this.handleResponse(response);
     } catch (error: any) {
-      // Fallback for demo mode - return mock search results
-      console.warn('[API] Search API not available, using demo data:', error.message);
-      return this.getDemoSearchResults(query, maxResults);
+      // Production-ready error handling - no demo data fallback
+      this.logError('❌ Natural Language Search failed', { query, repositoryId, error: error.message });
+      throw new Error(`Natural Language Search failed: ${error.message || 'Unknown error occurred'}`);
     }
   }
 
@@ -742,25 +730,17 @@ class ApiService {
     }
   }
 
-  async getSearchFilters(repositoryId: number): Promise<any> {
+  // Search filter and example methods
+  async getSearchFilters(repositoryId?: number): Promise<any> {
     try {
-      const response = await this.api.get<ApiResponse<any>>(`/api/search/filters/${repositoryId}`);
+      const url = repositoryId 
+        ? `/api/search/filters/${repositoryId}`
+        : '/api/search/filters';
+      const response = await this.api.get<ApiResponse<any>>(url);
       return this.handleResponse(response);
     } catch (error: any) {
-      // Fallback for demo mode
-      console.warn('[API] Filters API not available, using demo data');
+      console.warn('[API] Search filters API not available, using demo data');
       return this.getDemoFilters();
-    }
-  }
-
-  async analyzeQueryIntent(query: string): Promise<any> {
-    try {
-      const response = await this.api.post<ApiResponse<any>>('/api/search/intent', { query });
-      return this.handleResponse(response);
-    } catch (error: any) {
-      // Fallback for demo mode
-      console.warn('[API] Intent API not available, using demo data');
-      return this.getDemoIntent(query);
     }
   }
 
@@ -769,8 +749,7 @@ class ApiService {
       const response = await this.api.get<ApiResponse<any>>('/api/search/examples');
       return this.handleResponse(response);
     } catch (error: any) {
-      // Fallback for demo mode
-      console.warn('[API] Examples API not available, using demo data');
+      console.warn('[API] Search examples API not available, using demo data');
       return this.getDemoExamples();
     }
   }
@@ -782,7 +761,7 @@ class ApiService {
     try {
       // Parallel processing: intent analysis + search execution
       const [intentResult, searchResult] = await Promise.all([
-        this.analyzeQueryIntent(query),
+        this.analyzeSearchIntent(query),
         this.processNaturalLanguageQuery(query, repositoryId)
       ]);
 
@@ -1119,6 +1098,635 @@ class ApiService {
   async getRecentActivity(count: number = 10): Promise<any> {
     const response = await this.api.get<ApiResponse<any>>(`/api/dashboard/activity?count=${count}`);
     return this.handleResponse(response);
+  }
+
+  // ============================================================================
+  // PHASE 1 DIGITAL THREAD API METHODS
+  // ============================================================================
+
+  // Branch Analysis API methods
+  async compareBranches(repositoryId: number, baseBranch: string, featureBranch: string): Promise<any> {
+    try {
+      this.log('🔀 Comparing branches', { repositoryId, baseBranch, featureBranch });
+      
+      const response = await this.api.post<ApiResponse<any>>('/api/BranchAnalysis/compare', {
+        repositoryId,
+        baseBranch,
+        featureBranch
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Branch comparison failed', { repositoryId, baseBranch, featureBranch, error: error.message });
+      throw new Error(`Branch comparison failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getAvailableBranches(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/BranchAnalysis/repository/${repositoryId}/branches`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get branches', { repositoryId, error: error.message });
+      throw new Error(`Failed to get branches: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getBranchAnalysis(repositoryId: number, branchName: string): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/BranchAnalysis/repository/${repositoryId}/branch/${encodeURIComponent(branchName)}/analysis`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Branch analysis failed', { repositoryId, branchName, error: error.message });
+      throw new Error(`Branch analysis failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async assessMergeRisk(repositoryId: number, baseBranch: string, featureBranch: string): Promise<any> {
+    try {
+      this.log('⚠️ Assessing merge risk', { repositoryId, baseBranch, featureBranch });
+      
+      const response = await this.api.post<ApiResponse<any>>('/api/BranchAnalysis/merge-risk', {
+        repositoryId,
+        baseBranch,
+        featureBranch
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Merge risk assessment failed', { repositoryId, error: error.message });
+      throw new Error(`Merge risk assessment failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // UI Element Analysis API methods
+  async scanUIElements(repositoryId: number): Promise<any> {
+    try {
+      this.log('🔍 Scanning UI elements', { repositoryId });
+      
+      const response = await this.api.post<ApiResponse<any>>(`/api/UIElementAnalysis/repository/${repositoryId}/scan`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ UI element scan failed', { repositoryId, error: error.message });
+      throw new Error(`UI element scan failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getUIElements(repositoryId: number, filters?: {
+    component?: string;
+    filePath?: string;
+    automationReady?: boolean;
+  }): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.component) params.append('component', filters.component);
+      if (filters?.filePath) params.append('filePath', filters.filePath);
+      if (filters?.automationReady !== undefined) params.append('automationReady', filters.automationReady.toString());
+
+      const response = await this.api.get<ApiResponse<any>>(`/api/UIElementAnalysis/repository/${repositoryId}/elements?${params}`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get UI elements', { repositoryId, error: error.message });
+      throw new Error(`Failed to get UI elements: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getAutomationGaps(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/UIElementAnalysis/repository/${repositoryId}/automation-gaps`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get automation gaps', { repositoryId, error: error.message });
+      throw new Error(`Failed to get automation gaps: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async generateSelectors(repositoryId: number, elementIds: string[], selectorTypes: string[] = ['XPath', 'CssSelector']): Promise<any> {
+    try {
+      this.log('⚙️ Generating selectors', { repositoryId, elementIds, selectorTypes });
+      
+      const response = await this.api.post<ApiResponse<any>>(`/api/UIElementAnalysis/repository/${repositoryId}/generate-selectors`, {
+        elementIds,
+        selectorTypes
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Selector generation failed', { repositoryId, error: error.message });
+      throw new Error(`Selector generation failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getTestabilityScore(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/UIElementAnalysis/repository/${repositoryId}/testability-score`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get testability score', { repositoryId, error: error.message });
+      throw new Error(`Failed to get testability score: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // Test Case Management API methods
+  async createTestCase(testCaseData: any): Promise<any> {
+    try {
+      this.log('📝 Creating test case', { title: testCaseData.title });
+      
+      const response = await this.api.post<ApiResponse<any>>('/api/TestCase', testCaseData);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Test case creation failed', { error: error.message });
+      throw new Error(`Test case creation failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getTestCases(repositoryId: number, filters?: {
+    type?: string;
+    priority?: string;
+    status?: string;
+  }): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.type) params.append('type', filters.type);
+      if (filters?.priority) params.append('priority', filters.priority);
+      if (filters?.status) params.append('status', filters.status);
+
+      const response = await this.api.get<ApiResponse<any>>(`/api/TestCase/repository/${repositoryId}?${params}`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get test cases', { repositoryId, error: error.message });
+      throw new Error(`Failed to get test cases: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async linkRequirementsToTestCase(testCaseId: string, requirementIds: string[]): Promise<any> {
+    try {
+      const response = await this.api.post<ApiResponse<any>>(`/api/TestCase/${testCaseId}/link-requirements`, {
+        requirementIds
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to link requirements', { testCaseId, error: error.message });
+      throw new Error(`Failed to link requirements: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async linkCodeFilesToTestCase(testCaseId: string, filePaths: string[]): Promise<any> {
+    try {
+      const response = await this.api.post<ApiResponse<any>>(`/api/TestCase/${testCaseId}/link-files`, {
+        filePaths
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to link code files', { testCaseId, error: error.message });
+      throw new Error(`Failed to link code files: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async recordTestExecution(testCaseId: string, executionData: any): Promise<any> {
+    try {
+      this.log('▶️ Recording test execution', { testCaseId, result: executionData.result });
+      
+      const response = await this.api.post<ApiResponse<any>>(`/api/TestCase/${testCaseId}/executions`, executionData);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to record test execution', { testCaseId, error: error.message });
+      throw new Error(`Failed to record test execution: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getTestCoverage(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/TestCase/repository/${repositoryId}/coverage`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get test coverage', { repositoryId, error: error.message });
+      throw new Error(`Failed to get test coverage: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async generateTestCases(requirementIds: string[], options: any = {}): Promise<any> {
+    try {
+      this.log('🤖 Generating test cases from requirements', { requirementIds, options });
+      
+      const response = await this.api.post<ApiResponse<any>>('/api/TestCase/generate', {
+        requirementIds,
+        generationOptions: options
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Test case generation failed', { error: error.message });
+      throw new Error(`Test case generation failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // Traceability Matrix API methods
+  async getTraceabilityMatrix(repositoryId: number): Promise<any> {
+    try {
+      this.log('📊 Generating traceability matrix', { repositoryId });
+      
+      const response = await this.api.get<ApiResponse<any>>(`/api/Traceability/repository/${repositoryId}/matrix`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get traceability matrix', { repositoryId, error: error.message });
+      throw new Error(`Failed to get traceability matrix: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getRequirementTrace(requirementId: string): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/Traceability/requirement/${requirementId}/trace`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get requirement trace', { requirementId, error: error.message });
+      throw new Error(`Failed to get requirement trace: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getFileTrace(repositoryId: number, filePath: string): Promise<any> {
+    try {
+      const params = new URLSearchParams({ filePath });
+      const response = await this.api.get<ApiResponse<any>>(`/api/Traceability/repository/${repositoryId}/file-trace?${params}`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get file trace', { repositoryId, filePath, error: error.message });
+      throw new Error(`Failed to get file trace: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async createTraceabilityLink(linkData: any): Promise<any> {
+    try {
+      this.log('🔗 Creating traceability link', { linkData });
+      
+      const response = await this.api.post<ApiResponse<any>>('/api/Traceability/links', linkData);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to create traceability link', { error: error.message });
+      throw new Error(`Failed to create traceability link: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getDigitalThread(repositoryId: number, version?: string): Promise<any> {
+    try {
+      this.log('🧵 Generating digital thread', { repositoryId, version });
+      
+      const params = new URLSearchParams();
+      if (version) params.append('version', version);
+      
+      const response = await this.api.get<ApiResponse<any>>(`/api/Traceability/repository/${repositoryId}/digital-thread?${params}`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get digital thread', { repositoryId, error: error.message });
+      throw new Error(`Failed to get digital thread: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getImpactAnalysis(repositoryId: number, changeType: string, changeId: string, changeDescription?: string): Promise<any> {
+    try {
+      this.log('📈 Performing impact analysis', { repositoryId, changeType, changeId });
+      
+      const response = await this.api.post<ApiResponse<any>>('/api/Traceability/impact-analysis', {
+        repositoryId,
+        changeType,
+        changeId,
+        changeDescription
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Impact analysis failed', { repositoryId, error: error.message });
+      throw new Error(`Impact analysis failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getTraceabilityGaps(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/Traceability/repository/${repositoryId}/gaps`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get traceability gaps', { repositoryId, error: error.message });
+      throw new Error(`Failed to get traceability gaps: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // ============================================================================
+  // PHASE 1.1: HIGH-VALUE UNUSED API INTEGRATION
+  // ============================================================================
+
+  // Portfolio Management API methods (PortfolioController - 85% unused)
+  async getPortfolioSummary(): Promise<any> {
+    try {
+      this.log('📊 Getting portfolio summary');
+      const response = await this.api.get<ApiResponse<any>>('/api/portfolio/summary');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get portfolio summary', { error: error.message });
+      throw new Error(`Failed to get portfolio summary: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getPortfolioRepositories(filters?: {
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.status) params.append('status', filters.status);
+      if (filters?.sortBy) params.append('sortBy', filters.sortBy);
+      if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
+      if (filters?.page) params.append('page', filters.page.toString());
+      if (filters?.pageSize) params.append('pageSize', filters.pageSize.toString());
+
+      const response = await this.api.get<ApiResponse<any>>(`/api/portfolio/repositories?${params}`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get portfolio repositories', { error: error.message });
+      throw new Error(`Failed to get portfolio repositories: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getCriticalIssues(): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>('/api/portfolio/issues/critical');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get critical issues', { error: error.message });
+      throw new Error(`Failed to get critical issues: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async toggleRepositoryStar(repositoryId: number): Promise<any> {
+    try {
+      this.log('⭐ Toggling repository star', { repositoryId });
+      const response = await this.api.post<ApiResponse<any>>(`/api/portfolio/repositories/${repositoryId}/star`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to toggle repository star', { repositoryId, error: error.message });
+      throw new Error(`Failed to toggle repository star: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getPortfolioFilters(): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>('/api/portfolio/filters');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get portfolio filters', { error: error.message });
+      throw new Error(`Failed to get portfolio filters: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // AST Analysis API methods (ASTAnalysisController - 100% unused)
+  async getASTFileAnalysis(repositoryId: number, filePath: string): Promise<any> {
+    try {
+      this.log('🔍 Getting AST file analysis', { repositoryId, filePath });
+      const encodedPath = encodeURIComponent(filePath);
+      const response = await this.api.get<ApiResponse<any>>(`/api/ASTAnalysis/repository/${repositoryId}/files/${encodedPath}/analysis`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ AST file analysis failed', { repositoryId, filePath, error: error.message });
+      throw new Error(`AST file analysis failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async analyzeFileAST(fileContent: string, language: string, filePath: string): Promise<any> {
+    try {
+      this.log('🧮 Analyzing file AST', { language, filePath });
+      const response = await this.api.post<ApiResponse<any>>('/api/ASTAnalysis/analyze-file', {
+        fileContent,
+        language,
+        filePath
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ File AST analysis failed', { error: error.message });
+      throw new Error(`File AST analysis failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getRepositoryASTSummary(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/ASTAnalysis/repository/${repositoryId}/summary`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get AST summary', { repositoryId, error: error.message });
+      throw new Error(`Failed to get AST summary: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getComplexityMetrics(repositoryId: number): Promise<any> {
+    try {
+      this.log('📈 Getting complexity metrics', { repositoryId });
+      const response = await this.api.get<ApiResponse<any>>(`/api/ASTAnalysis/repository/${repositoryId}/complexity-metrics`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get complexity metrics', { repositoryId, error: error.message });
+      throw new Error(`Failed to get complexity metrics: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getCodeIssues(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/ASTAnalysis/repository/${repositoryId}/code-issues`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get code issues', { repositoryId, error: error.message });
+      throw new Error(`Failed to get code issues: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async analyzeCodeSnippet(codeSnippet: string, language: string): Promise<any> {
+    try {
+      this.log('🔍 Analyzing code snippet', { language, length: codeSnippet.length });
+      const response = await this.api.post<ApiResponse<any>>('/api/ASTAnalysis/analyze-code-snippet', {
+        codeSnippet,
+        language
+      });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Code snippet analysis failed', { error: error.message });
+      throw new Error(`Code snippet analysis failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getSupportedLanguages(): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>('/api/ASTAnalysis/supported-languages');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get supported languages', { error: error.message });
+      throw new Error(`Failed to get supported languages: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // Advanced Search API methods (SearchController - 75% unused)
+  async getAdvancedSearchFilters(repositoryId: number): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>(`/api/search/filters/${repositoryId}`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get search filters', { repositoryId, error: error.message });
+      throw new Error(`Failed to get search filters: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async analyzeSearchIntent(query: string): Promise<any> {
+    try {
+      const response = await this.api.post<ApiResponse<any>>('/api/search/intent', { query });
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to analyze search intent', { query, error: error.message });
+      throw new Error(`Failed to analyze search intent: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getSearchExamples(): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>('/api/search/examples');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get search examples', { error: error.message });
+      throw new Error(`Failed to get search examples: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async saveSearchQuery(queryData: any): Promise<any> {
+    try {
+      this.log('💾 Saving search query', { query: queryData.query });
+      const response = await this.api.post<ApiResponse<any>>('/api/search/save-query', queryData);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to save search query', { error: error.message });
+      throw new Error(`Failed to save search query: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getSavedSearchQueries(): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>('/api/search/saved-queries');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get saved queries', { error: error.message });
+      throw new Error(`Failed to get saved queries: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async performFacetedSearch(searchRequest: any): Promise<any> {
+    try {
+      this.log('🔍 Performing faceted search', { filters: searchRequest.facets });
+      const response = await this.api.post<ApiResponse<any>>('/api/search/faceted', searchRequest);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Faceted search failed', { error: error.message });
+      throw new Error(`Faceted search failed: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // Real-time Metrics API methods (MetricsController - 100% unused)
+  async getRealTimeMetrics(repositoryId: number): Promise<any> {
+    try {
+      this.log('📊 Getting real-time metrics', { repositoryId });
+      const response = await this.api.get<ApiResponse<any>>(`/api/metrics/repository/${repositoryId}/real-time`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get real-time metrics', { repositoryId, error: error.message });
+      throw new Error(`Failed to get real-time metrics: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // Removed duplicate collectRepositoryMetrics method - functionality is available via git provider method
+
+  async getMetricsTrends(repositoryId: number, timeRange?: string): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      if (timeRange) params.append('timeRange', timeRange);
+      
+      const response = await this.api.get<ApiResponse<any>>(`/api/metrics/repository/${repositoryId}/trends?${params}`);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get metrics trends', { repositoryId, error: error.message });
+      throw new Error(`Failed to get metrics trends: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getSystemPerformanceMetrics(): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>('/api/metrics/system/performance');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get system performance metrics', { error: error.message });
+      throw new Error(`Failed to get system performance metrics: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async getSystemUsageMetrics(): Promise<any> {
+    try {
+      const response = await this.api.get<ApiResponse<any>>('/api/metrics/system/usage');
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to get system usage metrics', { error: error.message });
+      throw new Error(`Failed to get system usage metrics: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  async configureAlert(alertConfig: any): Promise<any> {
+    try {
+      this.log('🔔 Configuring alert', { alertType: alertConfig.type });
+      const response = await this.api.post<ApiResponse<any>>('/api/metrics/alerts/configure', alertConfig);
+      return this.handleResponse(response);
+    } catch (error: any) {
+      this.logError('❌ Failed to configure alert', { error: error.message });
+      throw new Error(`Failed to configure alert: ${error.message || 'Unknown error occurred'}`);
+    }
+  }
+
+  // Digital Thread Helper Methods
+  async getCompleteDigitalThreadAnalysis(repositoryId: number, version?: string): Promise<any> {
+    try {
+      this.log('🔍 Starting complete digital thread analysis', { repositoryId, version });
+      
+      // Parallel execution of all digital thread components
+      const [
+        digitalThread,
+        traceabilityMatrix,
+        testCoverage,
+        automationGaps,
+        traceabilityGaps
+      ] = await Promise.all([
+        this.getDigitalThread(repositoryId, version),
+        this.getTraceabilityMatrix(repositoryId),
+        this.getTestCoverage(repositoryId),
+        this.getAutomationGaps(repositoryId),
+        this.getTraceabilityGaps(repositoryId)
+      ]);
+
+      const completeAnalysis = {
+        digitalThread,
+        traceabilityMatrix,
+        testCoverage,
+        automationGaps,
+        traceabilityGaps,
+        analysisTimestamp: new Date().toISOString(),
+        analysisType: 'complete-digital-thread',
+        summary: {
+          totalRequirements: traceabilityMatrix?.statistics?.totalRequirements || 0,
+          totalTestCases: traceabilityMatrix?.statistics?.totalTestCases || 0,
+          totalCodeFiles: traceabilityMatrix?.statistics?.totalCodeFiles || 0,
+          overallTraceability: traceabilityMatrix?.statistics?.overallTraceability || 0,
+          automationReadiness: automationGaps?.summary?.automationReadinessPercentage || 0,
+          testCoverage: testCoverage?.statistics?.overallCoverage || 0
+        }
+      };
+
+      this.log('✅ Complete digital thread analysis completed', {
+        repositoryId,
+        summary: completeAnalysis.summary
+      });
+
+      return completeAnalysis;
+    } catch (error: any) {
+      this.logError('❌ Complete digital thread analysis failed', { repositoryId, error: error.message });
+      throw error;
+    }
   }
 }
 

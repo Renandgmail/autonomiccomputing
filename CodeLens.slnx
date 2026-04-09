@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/CodeLens.Api/">
+    <Project Path="CodeLens.Api/RepoLens.Api.csproj" />
+  </Folder>
+  <Folder Name="/CodeLens.Core/">
+    <Project Path="CodeLens.Core/RepoLens.Core.csproj" />
+  </Folder>
+  <Folder Name="/CodeLens.Infrastructure/">
+    <Project Path="CodeLens.Infrastructure/RepoLens.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/CodeLens.Tests/">
+    <Project Path="CodeLens.Tests/RepoLens.Tests.csproj" />
+  </Folder>
+  <Folder Name="/CodeLens.Worker/">
+    <Project Path="CodeLens.Worker/RepoLens.Worker.csproj" />
+  </Folder>
+</Solution>
