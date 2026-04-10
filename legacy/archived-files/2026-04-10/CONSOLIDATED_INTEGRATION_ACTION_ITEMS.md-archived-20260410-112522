@@ -1,0 +1,231 @@
+# 📋 CONSOLIDATED INTEGRATION ACTION ITEMS
+## UI → Service → Business → DTO → Database Integration Flow
+
+*Generated on: April 9, 2026*
+
+---
+
+## 🚨 CRITICAL PRIORITY ITEMS
+
+### **PT-001: Uncomment Digital Thread Controllers**
+- **Status**: Critical - Blocking 22 API endpoints
+- **Impact**: $8K/month revenue loss
+- **Files**: 
+  - `BranchAnalysisController.cs`
+  - `UIElementAnalysisController.cs` 
+  - `TestCaseController.cs`
+  - `TraceabilityController.cs`
+- **Action**: Remove `// TEMPORARILY COMMENTED OUT FOR PHASE 1 IMPLEMENTATION`
+- **Effort**: 1 hour
+- **Integration Layer**: Controller → Service
+
+### **PT-002: Fix VocabularyController NotImplementedException**
+- **Status**: Critical - All methods throwing NotImplementedException
+- **Impact**: $5K/month revenue loss - Complete vocabulary analysis unusable
+- **Files**: `VocabularyExtractionService.cs`
+- **Issue**: All 5 methods throw `NotImplementedException("Will implement in next iteration")`
+- **Methods**:
+  - `ExtractTermsAsync(int repositoryId)`
+  - `GetVocabularyTerms(...)`
+  - `GetBusinessConcepts(...)`
+  - `GetDomainMapping(...)`
+  - `GetConceptRelationships(...)`
+- **Effort**: 2-3 days
+- **Integration Layer**: Service → Business Logic
+
+### **PT-003: Create Missing Digital Thread Service Implementations**
+- **Status**: Critical Gap - Controllers exist but no service backing
+- **Impact**: Controllers functional but no business logic
+- **Missing Services**:
+  - `IBranchAnalysisService` - Interface exists, no implementation
+  - `IUIElementAnalysisService` - Missing completely
+  - `ITestCaseService` - Missing completely
+  - `ITraceabilityService` - Missing completely
+- **Effort**: 3-5 days
+- **Integration Layer**: Service → Business Logic
+
+---
+
+## 🔴 HIGH PRIORITY ITEMS
+
+### **PT-015: Implement Missing Git Provider Services**
+- **Status**: NotImplementedException across multiple providers
+- **Impact**: Multi-provider claims vs reality mismatch - $3K/month revenue
+- **Files**:
+  - `GitLabProviderService.cs` - All methods throw NotImplementedException
+  - `BitbucketProviderService.cs` - All methods throw NotImplementedException  
+  - `AzureDevOpsProviderService.cs` - All methods throw NotImplementedException
+- **Working**: `GitHubProviderService.cs`, `LocalProviderService.cs`
+- **Effort**: 1 week
+- **Integration Layer**: Service → External APIs
+
+### **PT-020: Digital Thread Database Schema Implementation**
+- **Status**: Missing database support for Digital Thread features
+- **Impact**: No data persistence for Digital Thread functionality
+- **Missing Tables**: 
+  - Branch analysis data
+  - UI element tracking
+  - Test case relationships
+  - Traceability matrices
+- **Effort**: 2-3 days
+- **Integration Layer**: Service → DTO → Database
+
+### **PT-022: Real-time Metrics Storage Implementation**
+- **Status**: MetricsController exists but unclear data storage
+- **Impact**: Real-time data not properly persisted
+- **Files**: `MetricsController.cs` functional but storage layer unclear
+- **Effort**: 1-2 weeks
+- **Integration Layer**: Service → DTO → Database
+
+---
+
+## 🟠 MEDIUM PRIORITY ITEMS
+
+### **PT-014: Complete AST Analysis Missing Features**
+- **Status**: Partial implementation
+- **Impact**: Advanced code analysis features incomplete
+- **Files**: `ASTAnalysisController.cs` - Shell exists but missing core logic
+- **Missing**: Deep AST parsing, cross-language analysis, dependency mapping
+- **Effort**: 1-2 weeks
+- **Integration Layer**: Service → Business Logic
+
+### **PT-005: API Integration Phase 1**
+- **Status**: 78% of backend APIs remain unconnected to UI
+- **Impact**: Sophisticated backend unused by frontend
+- **Target**: Increase API utilization from 22% to 40%
+- **Focus Areas**:
+  - Vocabulary extraction UI integration
+  - Contributor analytics dashboard
+  - Advanced search functionality
+- **Effort**: 2-3 weeks
+- **Integration Layer**: UI → Service
+
+### **PT-013: Enhanced Repository Analysis Workflow**
+- **Status**: Backend sophisticated, UI basic
+- **Impact**: Advanced analysis features hidden from users
+- **Missing UI Components**:
+  - `VocabularyDashboard.tsx` (backend ready)
+  - Enhanced repository metrics display
+  - Real-time analysis progress
+- **Effort**: 2 weeks
+- **Integration Layer**: UI → Service
+
+---
+
+## 🟡 LOWER PRIORITY ITEMS
+
+### **PT-027: Implement Log File Monitoring Service**
+- **Status**: Operations gap
+- **Impact**: Proactive issue identification missing
+- **Implementation**: File system watcher, log aggregation, error patterns
+- **Effort**: 2-3 weeks
+- **Integration Layer**: Service → Infrastructure
+
+### **PT-018: Comprehensive Test Coverage**
+- **Status**: Major features untested
+- **Missing Tests**:
+  - `VocabularyExtractionServiceTests`
+  - `DigitalThreadServicesTests`
+  - Integration tests for new features
+- **Target**: 90%+ test coverage
+- **Effort**: 2-3 weeks
+- **Integration Layer**: All layers
+
+---
+
+## 📊 INTEGRATION FLOW ANALYSIS
+
+### **Current State**
+- **UI Components**: 85% complete, sophisticated design
+- **Controllers**: 70% functional, 30% commented/incomplete  
+- **Services**: 40% complete, 60% NotImplementedException
+- **Business Logic**: 30% implemented
+- **DTOs**: 80% defined
+- **Database Schema**: 60% complete, missing Digital Thread tables
+- **API Utilization**: 22% (78% unused)
+
+### **Target State (Phase 1)**
+- **UI Components**: 90% functional with data
+- **Controllers**: 95% uncommented and working
+- **Services**: 80% implemented (remove NotImplementedException)
+- **Business Logic**: 70% functional
+- **DTOs**: 90% actively used
+- **Database Schema**: 85% complete
+- **API Utilization**: 50%
+
+---
+
+## 🚀 IMPLEMENTATION PHASES
+
+### **Phase 1: Critical Fixes (2-3 weeks)**
+- [ ] Uncomment Digital Thread controllers (1 hour)
+- [ ] Fix VocabularyController NotImplementedException (2-3 days)
+- [ ] Create basic Digital Thread service implementations (3-5 days)
+- [ ] Database schema updates for Digital Thread (2-3 days)
+- [ ] Basic UI integration for vocabulary features (1 week)
+
+**Result**: API utilization increases from 22% to 50%
+
+### **Phase 2: Service Implementations (4-6 weeks)**
+- [ ] Complete Git provider services implementation
+- [ ] Enhance AST analysis features
+- [ ] Real-time metrics storage implementation
+- [ ] Comprehensive error handling
+- [ ] Advanced UI components integration
+
+**Result**: API utilization increases to 75%
+
+### **Phase 3: Quality & Polish (2-3 weeks)**
+- [ ] Comprehensive test coverage (90%+)
+- [ ] Performance optimization
+- [ ] UI/UX enhancements
+- [ ] Documentation completion
+- [ ] Production readiness validation
+
+**Result**: API utilization reaches 90%+ (enterprise-grade platform)
+
+---
+
+## 💰 BUSINESS IMPACT SUMMARY
+
+### **Revenue at Risk**
+- **Digital Thread Features**: $8K/month (commented controllers)
+- **Vocabulary Analysis**: $5K/month (NotImplementedException)
+- **Multi-Provider Support**: $3K/month (provider services)
+- **Advanced Analytics**: $10K/month (partial functionality)
+
+**Total Revenue Impact**: **$26K/month** until issues resolved
+
+### **User Experience Issues**
+- **False Advertising**: Features claimed but not functional
+- **User Frustration**: APIs return NotImplemented errors  
+- **Limited Functionality**: Only 22% of backend capabilities accessible
+- **Incomplete Workflows**: Integration gaps prevent end-to-end usage
+
+---
+
+## 🔧 TECHNICAL DEBT SUMMARY
+
+### **Service Layer Issues**
+- 5 controllers with NotImplementedException methods
+- 4 major service interfaces without implementations  
+- 3 Git provider services completely non-functional
+- Multiple TODO comments blocking functionality
+
+### **Database Integration Gaps**  
+- Missing Digital Thread schema tables
+- Real-time metrics storage unclear
+- Entity Framework migrations needed
+- Performance optimization required
+
+### **UI-Backend Connection Issues**
+- 78% of API endpoints not connected to UI
+- Sophisticated UI components without data sources
+- Frontend-backend endpoint mismatches
+- Missing error handling for service failures
+
+---
+
+**Priority**: Complete Phase 1 critical fixes to restore basic functionality and unlock blocked revenue streams.
+
+**Next Action**: Start with PT-001 (uncomment controllers) → PT-002 (fix NotImplementedException) → PT-003 (create service implementations)

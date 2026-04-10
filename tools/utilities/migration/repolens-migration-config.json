@@ -1,0 +1,226 @@
+{
+  "migration_name": "RepoLens Structure Reorganization",
+  "description": "Move RepoLens codebase to new enterprise structure with automatic archiving",
+  "version": "2.0",
+  "operations": [
+    {
+      "action": "move",
+      "source": "RepoLens.Api",
+      "destination": "src/backend/RepoLens.Api",
+      "description": "Move API project to backend folder"
+    },
+    {
+      "action": "move",
+      "source": "RepoLens.Core",
+      "destination": "src/backend/RepoLens.Core",
+      "description": "Move Core project to backend folder"
+    },
+    {
+      "action": "move",
+      "source": "RepoLens.Infrastructure",
+      "destination": "src/backend/RepoLens.Infrastructure",
+      "description": "Move Infrastructure project to backend folder"
+    },
+    {
+      "action": "move",
+      "source": "RepoLens.Worker",
+      "destination": "src/backend/RepoLens.Worker",
+      "description": "Move Worker project to backend folder"
+    },
+    {
+      "action": "move",
+      "source": "DatabaseQuery",
+      "destination": "src/backend/DatabaseQuery",
+      "description": "Move DatabaseQuery project to backend folder"
+    },
+    {
+      "action": "move",
+      "source": "SearchApiDemo",
+      "destination": "src/backend/SearchApiDemo",
+      "description": "Move SearchApiDemo project to backend folder"
+    },
+    {
+      "action": "move",
+      "source": "repolens-ui",
+      "destination": "src/frontend/repolens-ui",
+      "description": "Move React UI to frontend folder"
+    },
+    {
+      "action": "move",
+      "source": "RepoLens.Tests",
+      "destination": "tests/unit/backend/RepoLens.Tests",
+      "description": "Move tests to organized test structure"
+    },
+    {
+      "action": "move",
+      "source": "README.md",
+      "destination": "docs/project-management/README.md",
+      "description": "Move main README to project management docs"
+    },
+    {
+      "action": "move",
+      "source": "BUILD-AND-START-GUIDE.md",
+      "destination": "docs/operations/deployment/build-and-start-guide.md",
+      "description": "Move build guide to operations docs"
+    },
+    {
+      "action": "move",
+      "source": "DEPLOYMENT-GUIDE.md",
+      "destination": "docs/operations/deployment/deployment-guide.md",
+      "description": "Move deployment guide to operations docs"
+    },
+    {
+      "action": "move",
+      "source": "docker-compose.yml",
+      "destination": "deployment/docker/production/docker-compose.yml",
+      "description": "Move production Docker Compose to deployment folder"
+    },
+    {
+      "action": "move",
+      "source": "docker-compose.dev.yml",
+      "destination": "deployment/docker/development/docker-compose.yml",
+      "description": "Move dev Docker Compose to deployment folder"
+    },
+    {
+      "action": "move",
+      "source": "nginx.conf",
+      "destination": "deployment/docker/production/nginx.conf",
+      "description": "Move nginx config to deployment folder"
+    },
+    {
+      "action": "move",
+      "source": "deploy-infrastructure.ps1",
+      "destination": "deployment/scripts/deployment/deploy-infrastructure.ps1",
+      "description": "Move deployment script"
+    },
+    {
+      "action": "move",
+      "source": "git-status.ps1",
+      "destination": "tools/dev-tools/git-status.ps1",
+      "description": "Move dev tool script"
+    },
+    {
+      "action": "move",
+      "source": "git-upload.ps1",
+      "destination": "tools/dev-tools/git-upload.ps1",
+      "description": "Move git upload script"
+    },
+    {
+      "action": "move",
+      "source": "query-database.ps1",
+      "destination": "tools/dev-tools/query-database.ps1",
+      "description": "Move database query script"
+    },
+    {
+      "action": "move",
+      "source": "ManualDataIngestion.ps1",
+      "destination": "tools/dev-tools/manual-data-ingestion.ps1",
+      "description": "Move data ingestion script"
+    },
+    {
+      "action": "move",
+      "source": "Monitor-Services.ps1",
+      "destination": "deployment/scripts/monitoring/monitor-services.ps1",
+      "description": "Move monitoring script"
+    },
+    {
+      "action": "move",
+      "source": "database-schema.sql",
+      "destination": "docs/architecture/database-design/schema.sql",
+      "description": "Move database schema to architecture docs"
+    },
+    {
+      "action": "update_file",
+      "source": "RepoLens.sln",
+      "description": "Update solution file paths",
+      "replacements": [
+        {
+          "find": "RepoLens\\.Api\\\\",
+          "replace": "src\\\\backend\\\\RepoLens.Api\\\\"
+        },
+        {
+          "find": "RepoLens\\.Core\\\\",
+          "replace": "src\\\\backend\\\\RepoLens.Core\\\\"
+        },
+        {
+          "find": "RepoLens\\.Infrastructure\\\\",
+          "replace": "src\\\\backend\\\\RepoLens.Infrastructure\\\\"
+        },
+        {
+          "find": "RepoLens\\.Worker\\\\",
+          "replace": "src\\\\backend\\\\RepoLens.Worker\\\\"
+        },
+        {
+          "find": "RepoLens\\.Tests\\\\",
+          "replace": "tests\\\\unit\\\\backend\\\\RepoLens.Tests\\\\"
+        },
+        {
+          "find": "DatabaseQuery\\\\",
+          "replace": "src\\\\backend\\\\DatabaseQuery\\\\"
+        },
+        {
+          "find": "SearchApiDemo\\\\",
+          "replace": "src\\\\backend\\\\SearchApiDemo\\\\"
+        }
+      ]
+    },
+    {
+      "action": "archive",
+      "source": "system-audit",
+      "description": "Archive system audit folder to legacy"
+    },
+    {
+      "action": "archive",
+      "source": "repolens-docs",
+      "description": "Archive old docs folder to legacy"
+    }
+  ],
+  "validation": {
+    "build_targets": [
+      {
+        "type": "dotnet",
+        "path": "RepoLens.sln",
+        "description": "Build entire solution with new paths"
+      },
+      {
+        "type": "dotnet",
+        "path": "src/backend/RepoLens.Api",
+        "description": "Build API project individually"
+      },
+      {
+        "type": "npm",
+        "path": "src/frontend/repolens-ui",
+        "description": "Build React frontend"
+      }
+    ],
+    "custom_commands": [
+      {
+        "command": "dotnet test tests/unit/backend/RepoLens.Tests --logger console",
+        "description": "Run unit tests from new location",
+        "expected_exit_code": 0
+      }
+    ]
+  },
+  "cleanup": [
+    {
+      "action": "delete",
+      "path": "bin",
+      "description": "Remove root-level build output folders"
+    },
+    {
+      "action": "delete",
+      "path": "obj",
+      "description": "Remove root-level build cache folders"
+    },
+    {
+      "action": "archive",
+      "path": "node_modules",
+      "description": "Archive root node_modules if exists"
+    },
+    {
+      "action": "archive",
+      "path": "package-lock.json",
+      "description": "Archive root package-lock.json"
+    }
+  ]
+}

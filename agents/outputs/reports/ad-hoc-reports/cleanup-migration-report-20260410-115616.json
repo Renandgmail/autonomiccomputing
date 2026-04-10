@@ -1,0 +1,10 @@
+{
+    "timestamp":  "2026-04-10 11:56:17",
+    "operations_failed":  0,
+    "operations_total":  4,
+    "operations_successful":  4,
+    "backup_location":  "legacy\\migration-archives\\cleanup-20260410-115616",
+    "log_file":  "agents\\workspace\\logs\\migration-log-20260410-115616.log",
+    "error_log":  "agents\\workspace\\logs\\migration-errors-20260410-115616.log",
+    "migration_name":  "Final Enterprise Compliance - Fix Remaining 4 Issues"
+}

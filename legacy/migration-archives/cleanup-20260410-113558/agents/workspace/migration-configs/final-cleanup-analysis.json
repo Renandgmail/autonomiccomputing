@@ -1,0 +1,127 @@
+{
+  "migration_name": "Final Documentation Cleanup - Framework Workflow",
+  "migration_id": "final-cleanup-20260410-101205",
+  "timestamp": "2026-04-10 10:12:05",
+  "analysis": {
+    "current_structure": {
+      "root_files_remaining": [
+        "AUTONOMOUS_CLEANUP_SYSTEM_COMPLETE.md",
+        "CODE_MIGRATION_MAPPING.md", 
+        "COMPLETE-BUILD-COMMANDS.md",
+        "CONSOLIDATED_INTEGRATION_ACTION_ITEMS.md",
+        "deployment-options.md",
+        "FINAL_IMPLEMENTATION_SUMMARY.md",
+        "MIGRATION_GUIDE.md",
+        "PROJECT_STRUCTURE_REORGANIZATION.md", 
+        "PULL_REQUEST_TEMPLATE.md",
+        "REPOLENS_STRUCTURE_GUIDE.md",
+        "RepoLens.sln.backup-20260410-091734",
+        "SearchApiDemo.cs"
+      ],
+      "should_remain_in_root": [
+        "CLINE-STANDING-INSTRUCTIONS.md",
+        ".gitignore",
+        "package-lock.json", 
+        "RepoLens.sln",
+        "CodeLens.slnx"
+      ]
+    },
+    "relevance_assessment": {
+      "move_to_docs": [
+        "CODE_MIGRATION_MAPPING.md",
+        "COMPLETE-BUILD-COMMANDS.md", 
+        "MIGRATION_GUIDE.md",
+        "REPOLENS_STRUCTURE_GUIDE.md",
+        "deployment-options.md",
+        "PULL_REQUEST_TEMPLATE.md"
+      ],
+      "archive_completed_work": [
+        "AUTONOMOUS_CLEANUP_SYSTEM_COMPLETE.md",
+        "CONSOLIDATED_INTEGRATION_ACTION_ITEMS.md", 
+        "FINAL_IMPLEMENTATION_SUMMARY.md",
+        "PROJECT_STRUCTURE_REORGANIZATION.md",
+        "RepoLens.sln.backup-20260410-091734",
+        "SearchApiDemo.cs"
+      ]
+    }
+  },
+  "operations": [
+    {
+      "action": "move",
+      "source": "CODE_MIGRATION_MAPPING.md",
+      "destination": "docs/project-management/CODE_MIGRATION_MAPPING.md",
+      "description": "Move migration mapping to project management docs"
+    },
+    {
+      "action": "move", 
+      "source": "COMPLETE-BUILD-COMMANDS.md",
+      "destination": "docs/operations/deployment/COMPLETE-BUILD-COMMANDS.md",
+      "description": "Move build commands to deployment documentation"
+    },
+    {
+      "action": "move",
+      "source": "MIGRATION_GUIDE.md", 
+      "destination": "docs/project-management/MIGRATION_GUIDE.md",
+      "description": "Move migration guide to project management docs"
+    },
+    {
+      "action": "move",
+      "source": "REPOLENS_STRUCTURE_GUIDE.md",
+      "destination": "docs/architecture/REPOLENS_STRUCTURE_GUIDE.md", 
+      "description": "Move structure guide to architecture documentation"
+    },
+    {
+      "action": "move",
+      "source": "deployment-options.md",
+      "destination": "docs/operations/deployment/deployment-options.md",
+      "description": "Move deployment options to deployment documentation" 
+    },
+    {
+      "action": "move",
+      "source": "PULL_REQUEST_TEMPLATE.md",
+      "destination": "docs/project-management/PULL_REQUEST_TEMPLATE.md",
+      "description": "Move PR template to project management docs"
+    },
+    {
+      "action": "archive",
+      "source": "AUTONOMOUS_CLEANUP_SYSTEM_COMPLETE.md", 
+      "destination": "legacy/archived-files/completed-work/AUTONOMOUS_CLEANUP_SYSTEM_COMPLETE.md",
+      "description": "Archive completion summary"
+    },
+    {
+      "action": "archive",
+      "source": "CONSOLIDATED_INTEGRATION_ACTION_ITEMS.md",
+      "destination": "legacy/archived-files/completed-work/CONSOLIDATED_INTEGRATION_ACTION_ITEMS.md",
+      "description": "Archive completed integration items"
+    },
+    {
+      "action": "archive", 
+      "source": "FINAL_IMPLEMENTATION_SUMMARY.md",
+      "destination": "legacy/archived-files/completed-work/FINAL_IMPLEMENTATION_SUMMARY.md",
+      "description": "Archive implementation summary"
+    },
+    {
+      "action": "archive",
+      "source": "PROJECT_STRUCTURE_REORGANIZATION.md",
+      "destination": "legacy/archived-files/completed-work/PROJECT_STRUCTURE_REORGANIZATION.md", 
+      "description": "Archive structure reorganization document"
+    },
+    {
+      "action": "archive",
+      "source": "RepoLens.sln.backup-20260410-091734",
+      "destination": "legacy/archived-files/completed-work/RepoLens.sln.backup-20260410-091734",
+      "description": "Archive solution file backup"
+    },
+    {
+      "action": "archive",
+      "source": "SearchApiDemo.cs", 
+      "destination": "legacy/archived-files/completed-work/SearchApiDemo.cs",
+      "description": "Archive standalone demo file"
+    }
+  ],
+  "expected_outcome": {
+    "files_to_move": 6,
+    "files_to_archive": 6,
+    "root_files_remaining": 5
+  }
+}

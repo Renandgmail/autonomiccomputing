@@ -1,0 +1,144 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: repolens-postgres
+    environment:
+      POSTGRES_DB: repolens
+      POSTGRES_USER: repolens_user
+      POSTGRES_PASSWORD: repolens_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+  # Redis Cache (for future caching and sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: repolens-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+  # RepoLens API Backend
+  api:
+    build:
+      context: .
+      dockerfile: RepoLens.Api/Dockerfile
+    container_name: repolens-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=repolens;Username=repolens_user;Password=repolens_password
+      - Redis__ConnectionString=redis:6379
+      - JWT__Secret=YourProductionJWTSecretKeyHere123456789
+      - JWT__Issuer=RepoLens
+      - JWT__Audience=RepoLensUsers
+      - CodeIntelligence__EnablePatternMining=true
+      - CodeIntelligence__MaxConcurrentAnalysis=3
+      - Serilog__MinimumLevel=Information
+      - Serilog__WriteTo__0__Name=Console
+      - Serilog__WriteTo__1__Name=File
+      - Serilog__WriteTo__1__Args__path=/app/logs/repolens-.log
+      - Serilog__WriteTo__1__Args__rollingInterval=Day
+    ports:
+      - "5000:80"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+      - ./repositories:/app/repositories
+    networks:
+      - repolens-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # RepoLens Worker Service
+  worker:
+    build:
+      context: .
+      dockerfile: RepoLens.Worker/Dockerfile
+    container_name: repolens-worker
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=repolens;Username=repolens_user;Password=repolens_password
+      - Redis__ConnectionString=redis:6379
+      - BackgroundProcessing__Enabled=true
+      - BackgroundProcessing__MaxConcurrentJobs=2
+      - BackgroundProcessing__VocabularyExtractionInterval=60
+      - BackgroundProcessing__MetricsCollectionInterval=30
+      - Serilog__MinimumLevel=Information
+      - Serilog__WriteTo__0__Name=Console
+      - Serilog__WriteTo__1__Name=File
+      - Serilog__WriteTo__1__Args__path=/app/logs/worker-.log
+      - Serilog__WriteTo__1__Args__rollingInterval=Day
+    depends_on:
+      - postgres
+      - redis
+      - api
+    volumes:
+      - ./logs:/app/logs
+      - ./repositories:/app/repositories
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+  # React UI Frontend
+  ui:
+    build:
+      context: ./repolens-ui
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: http://localhost:5000
+    container_name: repolens-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Production)
+  nginx:
+    image: nginx:alpine
+    container_name: repolens-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl/certs:ro
+    depends_on:
+      - api
+      - ui
+    networks:
+      - repolens-network
+    restart: unless-stopped
+
+networks:
+  repolens-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

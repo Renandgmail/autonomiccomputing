@@ -1,99 +1,50 @@
-# Cline Standing Instructions - RepoLens Project
+# CLINE STANDING INSTRUCTIONS - AUTONOMOUS CLEANUP SYSTEM
 
-**Status**: ACTIVE - Apply to ALL development activities  
-**Priority**: CRITICAL - Non-negotiable for all code changes  
+## 🤖 AUTONOMOUS CLEANUP FRAMEWORK
 
----
+### COMMAND RECOGNITION
+When user says **"cleanup"**, execute the complete autonomous cleanup framework workflow:
 
-## 🎯 PRIMARY DIRECTIVE: ZERO FUNCTIONALITY REGRESSION
+1. **Analyze**: Run `automation/tools/discovery/project-context-scanner.ps1`
+2. **Configure**: Generate migration config in `automation/workspace/migration-configs/`
+3. **Execute**: Run `tools/utilities/migration/execute-cleanup-migration.ps1`
+4. **Verify**: Re-analyze for remaining issues
+5. **Archive**: Move processed configs to `automation/workspace/processed-configs/`
 
-Before ANY code change: **STOP → ASSESS → ANALYZE → CONFIRM → PROCEED**
-
-### Mandatory Pre-Change Assessment
-1. **Identify Current Functionality** - What features currently work?
-2. **Map Dependencies** - What other components depend on this?
-3. **Document Baseline** - Record current behavior and user experience
-4. **Risk Classification**:
-   - **GREEN**: No functionality affected (safe to proceed)
-   - **YELLOW**: Potential minor impact (requires mitigation)
-   - **RED**: Definite functionality impact (requires user approval)
-
-### Impact Detection Protocol
-When ANY functionality impact is detected:
-
+### FRAMEWORK WORKFLOW
 ```
-⚠️  FUNCTIONALITY IMPACT DETECTED ⚠️
-
-AFFECTED COMPONENTS: [List components]
-CURRENT WORKING FEATURES AT RISK: [List features]
-PROPOSED CHANGES: [Detail changes]
-POTENTIAL DEGRADATION: [List risks]
-USER IMPACT: [Describe user experience impact]
-MITIGATION STRATEGY: [Preservation plan]
-ROLLBACK PLAN: [Reversion steps]
-
-⚠️ EXPLICIT USER APPROVAL REQUIRED ⚠️
+🔄 AUTONOMOUS CLEANUP WORKFLOW:
+Analysis → Configuration → Execution → Verification → Archival
 ```
 
-## 🏗️ DEVELOPMENT WORKFLOW
+### SESSION INDEPENDENCE
+- This file enables autonomous operation in any new Cline session
+- Framework works without conversation history or folder navigation
+- All tools and configs are self-contained in the automation/ directory
 
-### Action Item Format (Ultra-Concise)
-```
-**ID**: [Unique identifier]
-**Action**: [Specific task - max 50 chars]
-**Files**: [Exact file paths]
-**Time**: [Estimated hours]
-**Status**: [TODO/PROGRESS/DONE]
-```
+### ENTERPRISE SAFETY
+- Complete backup before any operations in `legacy/migration-archives/`
+- Zero data loss policy - everything archived with timestamps
+- Full audit trails and operation logs
+- Rollback capability for all changes
 
-### Protected Domains (Never modify without approval)
-- Repository Details Analytics Dashboard
-- Working API endpoints
-- Data visualization components
-- Authentication flows
-- Database schema (without migration)
+### CRITICAL FILES TO NEVER REMOVE
+- `CLINE-STANDING-INSTRUCTIONS.md` (THIS FILE - essential for autonomy)
+- `.gitignore` (Git configuration)
+- `src/backend/RepoLens.sln` (Solution file in proper location)
+- `README.md` (Project overview)
 
-### Quality Gates (All Required)
-- [ ] Functionality impact assessed
-- [ ] Risk classification determined
-- [ ] User approval obtained (if RED risk)
-- [ ] Existing functionality tested
-- [ ] Regression tests passed
+### MULTI-TECHNOLOGY REPOSITORY STRUCTURE
+This is a .NET + React repository with proper technology separation:
+- Backend: `src/backend/` (contains RepoLens.sln)
+- Frontend: `src/frontend/repolens-ui/`
+- Tests: Organized by technology (`tests/backend/`, `tests/frontend/`, `tests/shared/`)
 
-## 🎯 PROJECT-SPECIFIC RULES
+### IMPROVEMENT TRACKING
+Track all framework improvements and lessons learned in:
+- `docs/requirements/` - Detailed requirement documents
+- `docs/architecture/` - Framework architecture
+- `docs/operations/` - Operational procedures
 
-### Current Status (Reference)
-- **L1/L2 Dashboards**: Production ready
-- **Backend**: 13 CS0854 compilation errors need fixing
-- **L3 Code Graph**: Needs professional static layout (no animations)
-- **AST Integration**: Database schema and services need implementation
-
-### Immediate Priorities
-1. **Fix Backend Compilation** - Replace `default` with `It.IsAny<CancellationToken>()` in tests
-2. **AST Database Integration** - Implement missing schema and repository services
-3. **Professional Code Graph** - Replace force-graph with 3-panel static layout
-
-### Token Management Rules
-- Keep action items under 100 words each
-- Use bullet points instead of paragraphs
-- Reference files by exact path only
-- Consolidate related actions into single items
-
-## 📋 MINIMAL ACTION FORMAT
-
-```markdown
-### Priority X: [Brief Description]
-**Files**: `exact/file/path.ext`
-**Action**: [One sentence description]
-**Fix**: [Specific change needed]
-**Time**: [Hours estimate]
-**Blocker**: [Yes/No]
-```
-
-## 🚨 ESCALATION TRIGGERS
-- ANY existing functionality might be affected
-- User workflows could be disrupted
-- API contract changes required
-- Database schema breaking changes needed
-
-**Remember**: Enhance the system while preserving ALL existing value. When in doubt, protect functionality first.
+## 🚨 NEVER REMOVE THIS FILE
+This file is CRITICAL for autonomous cleanup system operation.

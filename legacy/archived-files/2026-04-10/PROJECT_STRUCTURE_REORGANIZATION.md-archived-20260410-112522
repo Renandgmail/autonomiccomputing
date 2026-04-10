@@ -1,0 +1,462 @@
+# RepoLens Project Structure Reorganization
+
+## 🎯 Executive Summary
+
+This document provides a comprehensive folder structure reorganization for the RepoLens project to improve maintainability, scalability, and support agentic workflows. The new structure maintains all existing functionality while creating clear boundaries for documentation, agents, and future development.
+
+## 📁 New Folder Structure
+
+```
+repolens-enterprise/
+├── 📚 docs/                                    # Master documentation hub
+│   ├── 📋 project-management/
+│   │   ├── requirements/                       # Functional requirements
+│   │   │   ├── business-requirements.md        # PLACEHOLDER
+│   │   │   ├── technical-requirements.md       # PLACEHOLDER  
+│   │   │   ├── user-stories.md                # PLACEHOLDER
+│   │   │   └── acceptance-criteria.md          # PLACEHOLDER
+│   │   ├── specifications/                     # Technical specifications
+│   │   │   ├── api-specifications.md           # PLACEHOLDER
+│   │   │   ├── database-schema.md             # PLACEHOLDER
+│   │   │   ├── integration-specs.md           # PLACEHOLDER
+│   │   │   └── security-requirements.md       # PLACEHOLDER
+│   │   ├── planning/                          # Project planning artifacts
+│   │   │   ├── roadmap.md                     # PLACEHOLDER
+│   │   │   ├── milestones.md                  # PLACEHOLDER
+│   │   │   ├── sprint-planning.md             # PLACEHOLDER
+│   │   │   └── release-notes/                 # PLACEHOLDER FOLDER
+│   │   └── decisions/                         # Architecture Decision Records
+│   │       ├── 001-architecture-overview.md   # PLACEHOLDER
+│   │       ├── 002-technology-stack.md        # PLACEHOLDER
+│   │       ├── 003-database-design.md         # PLACEHOLDER
+│   │       └── 004-api-design.md              # PLACEHOLDER
+│   │
+│   ├── 🏗️ architecture/                        # Technical architecture
+│   │   ├── system-design/
+│   │   │   ├── high-level-architecture.md     # PLACEHOLDER
+│   │   │   ├── component-diagrams.md          # PLACEHOLDER
+│   │   │   ├── data-flow-diagrams.md          # PLACEHOLDER
+│   │   │   └── deployment-architecture.md     # PLACEHOLDER
+│   │   ├── api-design/
+│   │   │   ├── rest-api-design.md             # PLACEHOLDER
+│   │   │   ├── signalr-hubs.md               # PLACEHOLDER
+│   │   │   ├── authentication-flow.md         # PLACEHOLDER
+│   │   │   └── rate-limiting.md               # PLACEHOLDER
+│   │   ├── database-design/
+│   │   │   ├── entity-relationships.md        # PLACEHOLDER
+│   │   │   ├── indexing-strategy.md          # PLACEHOLDER
+│   │   │   ├── migration-strategy.md         # PLACEHOLDER
+│   │   │   └── performance-optimization.md   # PLACEHOLDER
+│   │   └── integration-patterns/
+│   │       ├── git-provider-integration.md   # PLACEHOLDER
+│   │       ├── elastic-search-integration.md # PLACEHOLDER
+│   │       ├── ast-analysis-pipeline.md      # PLACEHOLDER
+│   │       └── real-time-notifications.md    # PLACEHOLDER
+│   │
+│   ├── 🎨 design/                              # UX/UI Design documentation
+│   │   ├── user-experience/
+│   │   │   ├── user-personas.md               # PLACEHOLDER
+│   │   │   ├── user-journey-maps.md           # PLACEHOLDER
+│   │   │   ├── wireframes/                    # PLACEHOLDER FOLDER
+│   │   │   └── usability-testing.md           # PLACEHOLDER
+│   │   ├── user-interface/
+│   │   │   ├── design-system.md               # MIGRATE FROM repolens-docs
+│   │   │   ├── component-library.md           # MIGRATE FROM repolens-docs
+│   │   │   ├── interaction-patterns.md        # MIGRATE FROM repolens-docs
+│   │   │   └── responsive-design.md           # PLACEHOLDER
+│   │   └── branding/
+│   │       ├── brand-guidelines.md            # PLACEHOLDER
+│   │       ├── color-palette.md               # PLACEHOLDER
+│   │       ├── typography.md                  # PLACEHOLDER
+│   │       └── iconography.md                 # PLACEHOLDER
+│   │
+│   ├── 🔒 security/                            # Security documentation
+│   │   ├── security-policies/
+│   │   │   ├── data-protection-policy.md      # PLACEHOLDER
+│   │   │   ├── access-control-policy.md       # PLACEHOLDER
+│   │   │   ├── incident-response-plan.md      # PLACEHOLDER
+│   │   │   └── compliance-requirements.md     # PLACEHOLDER
+│   │   ├── vulnerability-assessments/
+│   │   │   ├── security-audit-reports/        # PLACEHOLDER FOLDER
+│   │   │   ├── penetration-testing/           # PLACEHOLDER FOLDER
+│   │   │   └── security-scanning-results/     # PLACEHOLDER FOLDER
+│   │   └── security-implementations/
+│   │       ├── authentication-implementation.md # PLACEHOLDER
+│   │       ├── authorization-matrix.md         # PLACEHOLDER
+│   │       ├── data-encryption.md             # PLACEHOLDER
+│   │       └── secure-coding-practices.md     # PLACEHOLDER
+│   │
+│   ├── 📊 operations/                          # DevOps and operations
+│   │   ├── deployment/
+│   │   │   ├── deployment-guide.md            # MIGRATE EXISTING
+│   │   │   ├── environment-setup.md           # PLACEHOLDER
+│   │   │   ├── configuration-management.md    # PLACEHOLDER
+│   │   │   └── scaling-strategies.md          # PLACEHOLDER
+│   │   ├── monitoring/
+│   │   │   ├── monitoring-strategy.md         # PLACEHOLDER
+│   │   │   ├── alerting-rules.md              # PLACEHOLDER
+│   │   │   ├── performance-metrics.md         # PLACEHOLDER
+│   │   │   └── log-management.md              # PLACEHOLDER
+│   │   ├── maintenance/
+│   │   │   ├── backup-restore.md              # MIGRATE FROM docs/operations
+│   │   │   ├── database-maintenance.md        # PLACEHOLDER
+│   │   │   ├── system-updates.md              # PLACEHOLDER
+│   │   │   └── disaster-recovery.md           # PLACEHOLDER
+│   │   └── troubleshooting/
+│   │       ├── common-issues.md               # PLACEHOLDER
+│   │       ├── error-handling.md              # PLACEHOLDER
+│   │       ├── performance-issues.md          # PLACEHOLDER
+│   │       └── debugging-guide.md             # PLACEHOLDER
+│   │
+│   ├── 🧪 testing/                             # Testing documentation
+│   │   ├── test-strategy/
+│   │   │   ├── testing-approach.md            # PLACEHOLDER
+│   │   │   ├── test-automation.md             # PLACEHOLDER
+│   │   │   ├── performance-testing.md         # PLACEHOLDER
+│   │   │   └── security-testing.md            # PLACEHOLDER
+│   │   ├── test-cases/
+│   │   │   ├── functional-tests/              # PLACEHOLDER FOLDER
+│   │   │   ├── integration-tests/             # PLACEHOLDER FOLDER
+│   │   │   ├── e2e-tests/                     # PLACEHOLDER FOLDER
+│   │   │   └── load-tests/                    # PLACEHOLDER FOLDER
+│   │   └── test-reports/
+│   │       ├── test-execution-reports/        # PLACEHOLDER FOLDER
+│   │       ├── coverage-reports/              # PLACEHOLDER FOLDER
+│   │       └── quality-metrics/               # PLACEHOLDER FOLDER
+│   │
+│   └── 📖 api/                                 # API documentation
+│       ├── rest-endpoints/
+│       │   ├── portfolio-api.md               # PLACEHOLDER
+│       │   ├── repository-api.md              # PLACEHOLDER
+│       │   ├── analytics-api.md               # PLACEHOLDER
+│       │   └── search-api.md                  # PLACEHOLDER
+│       ├── realtime-apis/
+│       │   ├── signalr-hubs.md               # PLACEHOLDER
+│       │   ├── websocket-events.md           # PLACEHOLDER
+│       │   └── notification-system.md        # PLACEHOLDER
+│       └── integration-guides/
+│           ├── client-sdk.md                  # PLACEHOLDER
+│           ├── webhook-integration.md         # PLACEHOLDER
+│           └── third-party-apis.md            # PLACEHOLDER
+│
+├── 🤖 agents/                                   # Agentic workflow management
+│   ├── 📋 workflows/                           # Agent workflow definitions
+│   │   ├── development-workflows/
+│   │   │   ├── code-review-agent.yaml         # PLACEHOLDER
+│   │   │   ├── testing-automation-agent.yaml  # PLACEHOLDER
+│   │   │   ├── documentation-agent.yaml       # PLACEHOLDER
+│   │   │   └── deployment-agent.yaml          # PLACEHOLDER
+│   │   ├── maintenance-workflows/
+│   │   │   ├── security-scan-agent.yaml       # PLACEHOLDER
+│   │   │   ├── performance-monitor-agent.yaml # PLACEHOLDER
+│   │   │   ├── backup-agent.yaml              # PLACEHOLDER
+│   │   │   └── update-agent.yaml              # PLACEHOLDER
+│   │   └── analytics-workflows/
+│   │       ├── metrics-collection-agent.yaml  # PLACEHOLDER
+│   │       ├── report-generation-agent.yaml   # PLACEHOLDER
+│   │       ├── trend-analysis-agent.yaml      # PLACEHOLDER
+│   │       └── alerting-agent.yaml            # PLACEHOLDER
+│   │
+│   ├── 📝 templates/                           # Document templates for agents
+│   │   ├── code-review-template.md            # PLACEHOLDER
+│   │   ├── bug-report-template.md             # PLACEHOLDER
+│   │   ├── feature-request-template.md        # PLACEHOLDER
+│   │   ├── test-report-template.md            # PLACEHOLDER
+│   │   ├── deployment-report-template.md      # PLACEHOLDER
+│   │   └── security-report-template.md        # PLACEHOLDER
+│   │
+│   ├── 🔧 tools/                               # Agent utility tools
+│   │   ├── document-generators/
+│   │   │   ├── requirement-extractor.py       # PLACEHOLDER
+│   │   │   ├── api-doc-generator.py           # PLACEHOLDER
+│   │   │   ├── test-doc-generator.py          # PLACEHOLDER
+│   │   │   └── architecture-diagram-gen.py    # PLACEHOLDER
+│   │   ├── quality-checkers/
+│   │   │   ├── code-quality-checker.py        # PLACEHOLDER
+│   │   │   ├── documentation-checker.py       # PLACEHOLDER
+│   │   │   ├── security-scanner.py            # PLACEHOLDER
+│   │   │   └── performance-analyzer.py        # PLACEHOLDER
+│   │   └── automation-scripts/
+│   │       ├── deployment-automation.py       # PLACEHOLDER
+│   │       ├── test-automation.py             # PLACEHOLDER
+│   │       ├── backup-automation.py           # PLACEHOLDER
+│   │       └── monitoring-setup.py            # PLACEHOLDER
+│   │
+│   ├── 📊 outputs/                             # Agent-generated outputs
+│   │   ├── reports/                           # Generated reports
+│   │   │   ├── daily-reports/                 # Daily automated reports
+│   │   │   ├── weekly-reports/                # Weekly automated reports
+│   │   │   ├── monthly-reports/               # Monthly automated reports
+│   │   │   └── ad-hoc-reports/                # On-demand reports
+│   │   ├── analysis/                          # Analysis results
+│   │   │   ├── code-analysis/                 # Code quality analysis
+│   │   │   ├── security-analysis/             # Security assessments
+│   │   │   ├── performance-analysis/          # Performance evaluations
+│   │   │   └── trend-analysis/                # Trend analysis results
+│   │   └── documentation/                     # Auto-generated docs
+│   │       ├── api-docs/                      # Generated API documentation
+│   │       ├── code-docs/                     # Generated code documentation
+│   │       ├── test-docs/                     # Generated test documentation
+│   │       └── deployment-docs/               # Generated deployment docs
+│   │
+│   └── 🗂️ workspace/                           # Temporary agent workspace
+│       ├── drafts/                            # Draft documents being worked on
+│       ├── scratch/                           # Temporary files and calculations
+│       ├── processing/                        # Files being processed
+│       └── archive/                           # Completed work archive
+│
+├── 🏠 src/                                     # Source code (reorganized)
+│   ├── backend/                               # Backend applications
+│   │   ├── RepoLens.Api/                      # MOVE FROM ROOT
+│   │   ├── RepoLens.Core/                     # MOVE FROM ROOT  
+│   │   ├── RepoLens.Infrastructure/           # MOVE FROM ROOT
+│   │   ├── RepoLens.Worker/                   # MOVE FROM ROOT
+│   │   ├── DatabaseQuery/                     # MOVE FROM ROOT
+│   │   └── SearchApiDemo/                     # MOVE FROM ROOT
+│   │
+│   ├── frontend/                              # Frontend applications
+│   │   └── repolens-ui/                       # MOVE FROM ROOT
+│   │
+│   ├── shared/                                # Shared libraries and utilities
+│   │   ├── common/                           # Common utilities
+│   │   ├── contracts/                        # Data contracts/DTOs
+│   │   ├── configurations/                   # Shared configurations
+│   │   └── constants/                        # Shared constants
+│   │
+│   └── integrations/                          # External integrations
+│       ├── git-providers/                    # Git provider integrations
+│       ├── ci-cd/                           # CI/CD integrations  
+│       ├── notification-services/            # Notification integrations
+│       └── analytics-services/               # Analytics integrations
+│
+├── 🧪 tests/                                   # Test suite (reorganized)
+│   ├── unit/                                 # Unit tests
+│   │   ├── backend/                          # Backend unit tests
+│   │   └── frontend/                         # Frontend unit tests
+│   ├── integration/                          # Integration tests
+│   │   ├── api-tests/                        # API integration tests
+│   │   ├── database-tests/                   # Database integration tests
+│   │   └── service-tests/                    # Service integration tests
+│   ├── e2e/                                 # End-to-end tests
+│   │   ├── user-workflows/                   # User workflow tests
+│   │   ├── performance-tests/                # Performance tests
+│   │   └── security-tests/                   # Security tests
+│   ├── load/                                # Load testing
+│   │   ├── stress-tests/                     # Stress testing
+│   │   ├── volume-tests/                     # Volume testing
+│   │   └── spike-tests/                      # Spike testing
+│   └── tools/                               # Testing utilities
+│       ├── test-data/                       # Test data generators
+│       ├── mocks/                           # Mock services
+│       └── fixtures/                        # Test fixtures
+│
+├── 🚀 deployment/                             # Deployment and infrastructure
+│   ├── docker/                              # Docker configurations
+│   │   ├── development/                     # Dev environment configs
+│   │   ├── staging/                         # Staging environment configs
+│   │   ├── production/                      # Production environment configs
+│   │   └── testing/                         # Testing environment configs
+│   ├── kubernetes/                          # K8s configurations
+│   │   ├── manifests/                       # K8s manifests
+│   │   ├── helm-charts/                     # Helm charts
+│   │   └── operators/                       # Custom operators
+│   ├── infrastructure/                      # Infrastructure as Code
+│   │   ├── terraform/                       # Terraform configurations
+│   │   ├── ansible/                         # Ansible playbooks
+│   │   └── cloudformation/                  # CloudFormation templates
+│   ├── scripts/                            # Deployment scripts
+│   │   ├── deployment/                      # MOVE EXISTING SCRIPTS
+│   │   ├── maintenance/                     # Maintenance scripts
+│   │   ├── monitoring/                      # Monitoring setup scripts
+│   │   └── backup/                          # Backup scripts
+│   └── environments/                        # Environment configurations
+│       ├── development.env                  # Development environment
+│       ├── staging.env                      # Staging environment
+│       ├── production.env                   # Production environment
+│       └── testing.env                      # Testing environment
+│
+├── 📦 tools/                                  # Development tools and utilities
+│   ├── build/                               # Build tools and scripts
+│   ├── dev-tools/                          # Development utilities
+│   ├── generators/                         # Code generators
+│   ├── analyzers/                          # Static analysis tools
+│   └── migration/                          # Migration utilities
+│
+├── 📋 project-management/                      # Project management artifacts  
+│   ├── requirements/                        # MOVE FROM docs/project-management
+│   ├── planning/                           # MOVE FROM docs/project-management
+│   ├── tracking/                           # Progress tracking
+│   │   ├── sprints/                        # Sprint tracking
+│   │   ├── milestones/                     # Milestone tracking
+│   │   └── metrics/                        # Project metrics
+│   └── governance/                         # Project governance
+│       ├── policies/                       # Project policies
+│       ├── procedures/                     # Project procedures
+│       └── standards/                      # Coding standards
+│
+└── 📚 legacy/                                 # Legacy files during transition
+    ├── original-structure/                  # Backup of original structure
+    ├── deprecated/                         # Deprecated files
+    └── migration-logs/                     # Migration tracking logs
+```
+
+## 🔄 Migration Strategy
+
+### Phase 1: Infrastructure Setup (Week 1)
+1. **Create new folder structure** (preserve existing)
+2. **Copy files to new locations** (don't move yet)
+3. **Update build scripts** to point to new locations
+4. **Test all functionality** with new structure
+
+### Phase 2: Content Migration (Week 2)
+1. **Move documentation files** to new docs structure
+2. **Reorganize source code** into src/ structure
+3. **Update all references** in code and configuration
+4. **Migrate deployment scripts** to deployment/ folder
+
+### Phase 3: Agent Setup (Week 3)
+1. **Implement agent workflows** in agents/ folder
+2. **Create document templates** for automated generation
+3. **Set up agent tools** for quality checking
+4. **Configure agent workspace** for temporary files
+
+### Phase 4: Cleanup (Week 4)
+1. **Remove old structure** files
+2. **Update all documentation** with new paths
+3. **Train team** on new structure
+4. **Validate all functionality** post-migration
+
+## 🤖 Agentic Workflow Rules
+
+### Agent Success Documentation Rules
+
+When an agent completes a task successfully, it MUST:
+
+1. **Update Progress Documentation**
+   ```yaml
+   agent_completion:
+     task_id: "unique-task-identifier"
+     completion_time: "2024-01-15T10:30:00Z"
+     status: "SUCCESS"
+     artifacts_created:
+       - path: "docs/api/portfolio-api.md"
+         type: "documentation"
+       - path: "agents/outputs/reports/daily-reports/2024-01-15-api-health.md"
+         type: "report"
+     next_actions:
+       - "Update related API documentation"
+       - "Notify stakeholders of completion"
+   ```
+
+2. **Create Completion Report** in `agents/outputs/reports/`
+   - Include task summary
+   - List all files created/modified
+   - Note any issues encountered
+   - Recommend follow-up actions
+
+3. **Update Relevant Documentation** in `docs/`
+   - Keep master documentation current
+   - Cross-reference with agent outputs
+   - Maintain version control
+
+### Agent Workspace Management
+
+1. **Temporary Files**: Use `agents/workspace/scratch/` for calculations
+2. **Draft Documents**: Use `agents/workspace/drafts/` for work-in-progress
+3. **Processing**: Use `agents/workspace/processing/` for active tasks
+4. **Archive**: Move completed work to `agents/workspace/archive/`
+
+### Agent Quality Gates
+
+Before marking any task complete, agents must:
+- [ ] Verify all documentation is up-to-date
+- [ ] Run quality checks on generated content
+- [ ] Cross-reference with existing documentation
+- [ ] Generate summary report
+- [ ] Archive working files
+
+### Agent Coordination Rules
+
+1. **Conflict Resolution**: If multiple agents modify same document, use version control merge strategies
+2. **Dependencies**: Check `docs/project-management/planning/` for task dependencies
+3. **Notifications**: Update team via `agents/outputs/reports/` for significant changes
+4. **Standards Compliance**: All agent outputs must follow templates in `agents/templates/`
+
+## 📂 File Movement Instructions
+
+### Immediate Moves (No Code Changes Required)
+
+```bash
+# Documentation consolidation
+MOVE repolens-docs/* → docs/design/user-interface/
+MOVE docs/operations/* → docs/operations/maintenance/
+MOVE *.md (root) → docs/project-management/
+
+# Deployment scripts
+MOVE *.ps1 → deployment/scripts/deployment/
+MOVE *.bat → deployment/scripts/deployment/
+MOVE *.yml → deployment/docker/development/
+MOVE *.yaml → deployment/kubernetes/manifests/
+
+# Configuration files
+MOVE *.json (config) → deployment/environments/
+MOVE *.conf → deployment/docker/development/
+```
+
+### Code Relocations (Require Build Updates)
+
+```bash
+# Backend consolidation
+MOVE RepoLens.* → src/backend/
+MOVE DatabaseQuery/ → src/backend/
+MOVE SearchApiDemo/ → src/backend/
+
+# Frontend consolidation  
+MOVE repolens-ui/ → src/frontend/
+
+# Test consolidation
+MOVE RepoLens.Tests/ → tests/unit/backend/
+```
+
+### Placeholder Creation Commands
+
+```bash
+# Create all placeholder directories
+mkdir -p docs/{project-management,architecture,design,security,operations,testing,api}
+mkdir -p agents/{workflows,templates,tools,outputs,workspace}
+mkdir -p src/{backend,frontend,shared,integrations}
+mkdir -p tests/{unit,integration,e2e,load,tools}
+mkdir -p deployment/{docker,kubernetes,infrastructure,scripts,environments}
+mkdir -p tools/{build,dev-tools,generators,analyzers,migration}
+mkdir -p project-management/{requirements,planning,tracking,governance}
+mkdir -p legacy/{original-structure,deprecated,migration-logs}
+```
+
+## ✅ Benefits of New Structure
+
+1. **Clear Separation of Concerns**: Code, docs, tests, deployment are clearly separated
+2. **Agent-Friendly**: Dedicated spaces for agent workflows and outputs
+3. **Scalable**: Structure supports growth and additional components
+4. **Maintainable**: Logical grouping makes finding and updating files easier
+5. **Professional**: Enterprise-grade organization suitable for large teams
+6. **Version Control Friendly**: Better git organization with logical groupings
+7. **Documentation-Driven**: Comprehensive documentation structure with placeholders
+8. **Automation-Ready**: Structure supports CI/CD and automated workflows
+
+## 🚨 Risk Mitigation
+
+1. **Backup Strategy**: Keep original structure in `legacy/original-structure/`
+2. **Gradual Migration**: Move in phases to minimize disruption
+3. **Testing**: Validate functionality at each phase
+4. **Rollback Plan**: Maintain ability to revert to original structure
+5. **Team Training**: Provide documentation and training on new structure
+6. **Tool Updates**: Update all development tools to use new paths
+
+## 📊 Success Metrics
+
+- [ ] All existing functionality preserved
+- [ ] Build times maintained or improved
+- [ ] Developer onboarding time reduced
+- [ ] Documentation completeness improved
+- [ ] Agent automation operational
+- [ ] Zero regression in user experience

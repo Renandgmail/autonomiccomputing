@@ -1,0 +1,57 @@
+{
+  "migration_name": "Final Root Directory Cleanup - Remove All Remaining Issues",
+  "migration_id": "final-root-cleanup-20260410-114304",
+  "timestamp": "2026-04-10 11:43:04",
+  "analysis": {
+    "remaining_issues": [
+      {
+        "file": ".gitignore.backup-20260410-113558",
+        "issue": "Backup file should be archived",
+        "action": "archive"
+      },
+      {
+        "directory": "agents/",
+        "issue": "Duplicate directory that should have been renamed to automation/",
+        "action": "remove_duplicate"
+      }
+    ],
+    "validation": {
+      "target_root_files": 5,
+      "target_root_directories": 8,
+      "current_issues": 2
+    }
+  },
+  "operations": [
+    {
+      "action": "archive",
+      "source": ".gitignore.backup-20260410-113558",
+      "destination": "legacy/migration-archives/backup-files/.gitignore.backup-20260410-113558",
+      "description": "Archive gitignore backup file"
+    },
+    {
+      "action": "archive",
+      "source": "agents",
+      "destination": "legacy/migration-archives/duplicate-directories/agents-duplicate",
+      "description": "Archive duplicate agents directory (automation/ is the correct one)"
+    }
+  ],
+  "expected_final_state": {
+    "root_files": [
+      ".gitignore",
+      "CLINE-STANDING-INSTRUCTIONS.md",
+      "CodeLens.slnx", 
+      "package-lock.json",
+      "RepoLens.sln"
+    ],
+    "root_directories": [
+      ".git/",
+      "automation/",
+      "deployment/", 
+      "docs/",
+      "legacy/",
+      "src/",
+      "tests/",
+      "tools/"
+    ]
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "analysis_name": "Root Directory Validation - Enterprise Best Practices",
+  "analysis_id": "root-validation-20260410-113118",
+  "timestamp": "2026-04-10 11:31:18",
+  "current_root_directories": {
+    "should_remain_in_root": {
+      ".git/": {
+        "rationale": "Git repository metadata - MUST remain in root for Git functionality",
+        "industry_standard": true,
+        "enterprise_compliant": true,
+        "action": "keep"
+      }
+    },
+    "should_be_moved": {
+      "node_modules/": {
+        "current_purpose": "npm dependencies for React frontend",
+        "issue": "Should be inside the frontend project, not in root",
+        "proper_location": "src/frontend/repolens-ui/node_modules/",
+        "rationale": "npm dependencies belong with their respective project",
+        "enterprise_practice": "Dependencies should be co-located with their consuming project",
+        "action": "move to src/frontend/repolens-ui/"
+      },
+      "bin/": {
+        "current_purpose": ".NET build outputs",
+        "issue": "Build artifacts should not be in root - can be regenerated",
+        "proper_location": "Build artifacts should be in .gitignore and regenerated",
+        "rationale": "Build outputs are temporary and project-specific",
+        "enterprise_practice": "Build artifacts excluded from source control",
+        "action": "archive and add to .gitignore"
+      },
+      "obj/": {
+        "current_purpose": ".NET intermediate build files", 
+        "issue": "Intermediate files should not be in root - can be regenerated",
+        "proper_location": "Should be in .gitignore and regenerated",
+        "rationale": "Intermediate files are temporary compiler artifacts",
+        "enterprise_practice": "obj/ folders excluded from source control",
+        "action": "archive and add to .gitignore"
+      },
+      "project-management/": {
+        "current_purpose": "Project management artifacts",
+        "issue": "This should be inside docs/ structure",
+        "proper_location": "docs/project-management/",
+        "rationale": "Project management docs are documentation",
+        "enterprise_practice": "All documentation under docs/ hierarchy",
+        "action": "consolidate into docs/project-management/"
+      }
+    },
+    "should_be_renamed_and_organized": {
+      "agents/": {
+        "current_name": "agents",
+        "suggested_name": "automation/",
+        "rationale": "More descriptive and indicates automation/tooling purpose",
+        "enterprise_practice": "Clear, descriptive directory names",
+        "action": "rename to automation/ and organize sub-structure"
+      },
+      "deployment/": {
+        "current_name": "deployment", 
+        "assessment": "Name is acceptable",
+        "rationale": "Clear purpose and industry standard",
+        "enterprise_practice": "deployment/ is widely used",
+        "action": "keep name, ensure sub-structure is logical"
+      },
+      "docs/": {
+        "current_name": "docs",
+        "assessment": "Name is acceptable", 
+        "rationale": "Industry standard for documentation",
+        "enterprise_practice": "docs/ is universal standard",
+        "action": "keep name, ensure comprehensive structure"
+      },
+      "legacy/": {
+        "current_name": "legacy",
+        "assessment": "Name is acceptable",
+        "rationale": "Clear purpose for archived/historical items",
+        "enterprise_practice": "legacy/ clearly indicates historical content",
+        "action": "keep name, ensure proper archival structure"
+      },
+      "src/": {
+        "current_name": "src",
+        "assessment": "Perfect - industry standard",
+        "rationale": "Universal standard for source code",
+        "enterprise_practice": "src/ is the gold standard",
+        "action": "keep as-is"
+      },
+      "tests/": {
+        "current_name": "tests", 
+        "assessment": "Acceptable but could be improved",
+        "alternative": "test/ (singular) or keep tests/",
+        "rationale": "Both singular and plural are common",
+        "enterprise_practice": "Either tests/ or test/ widely accepted",
+        "action": "keep current name for consistency"
+      },
+      "tools/": {
+        "current_name": "tools",
+        "assessment": "Perfect - industry standard", 
+        "rationale": "Clear purpose for development utilities",
+        "enterprise_practice": "tools/ is widely recognized",
+        "action": "keep as-is"
+      }
+    }
+  },
+  "enterprise_best_practices": {
+    "root_directory_principles": [
+      "Root should contain only essential files and top-level organizational directories",
+      "Build artifacts (bin/, obj/) should never be in root or source control",
+      "Dependencies should be co-located with their consuming projects",
+      "Documentation should be centralized under docs/",
+      "Directory names should be clear and follow industry standards"
+    ],
+    "recommended_root_structure": {
+      "files": [
+        ".gitignore",
+        "package-lock.json", 
+        "RepoLens.sln",
+        "CodeLens.slnx",
+        "CLINE-STANDING-INSTRUCTIONS.md"
+      ],
+      "directories": [
+        ".git/ (Git metadata)",
+        "src/ (Source code)",
+        "docs/ (All documentation)", 
+        "tests/ (Testing structure)",
+        "deployment/ (Infrastructure)",
+        "tools/ (Development utilities)",
+        "automation/ (Renamed from agents/)",
+        "legacy/ (Archives)"
+      ]
+    }
+  },
+  "proposed_operations": [
+    {
+      "action": "move",
+      "source": "node_modules",
+      "destination": "src/frontend/repolens-ui/node_modules",
+      "description": "Move npm dependencies to frontend project where they belong"
+    },
+    {
+      "action": "archive",
+      "source": "bin",
+      "destination": "legacy/build-artifacts/bin-archived",
+      "description": "Archive build outputs and add to .gitignore"
+    },
+    {
+      "action": "archive", 
+      "source": "obj",
+      "destination": "legacy/build-artifacts/obj-archived",
+      "description": "Archive intermediate files and add to .gitignore"
+    },
+    {
+      "action": "consolidate",
+      "source": "project-management",
+      "destination": "docs/project-management",
+      "description": "Merge standalone project-management into docs structure"
+    },
+    {
+      "action": "rename",
+      "source": "agents",
+      "destination": "automation", 
+      "description": "Rename to more descriptive and enterprise-appropriate name"
+    },
+    {
+      "action": "update_gitignore",
+      "description": "Add bin/, obj/, and node_modules patterns to .gitignore"
+    }
+  ],
+  "validation_criteria": {
+    "root_file_count_target": "≤ 5 files",
+    "root_directory_count_target": "≤ 8 directories",
+    "enterprise_compliance": "All directories have clear, professional names",
+    "build_artifact_policy": "Zero build artifacts in source control",
+    "dependency_organization": "Dependencies co-located with consuming projects"
+  }
+}

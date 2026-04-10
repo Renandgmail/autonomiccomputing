@@ -1,0 +1,63 @@
+{
+  "migration_name": "Enterprise Root Directory Cleanup - Best Practices Implementation",
+  "migration_id": "enterprise-root-cleanup-20260410-113223",
+  "timestamp": "2026-04-10 11:32:23",
+  "rationale": "Following enterprise best practices: build artifacts removed, dependencies co-located, clear naming",
+  "operations": [
+    {
+      "action": "archive",
+      "source": "node_modules",
+      "destination": "legacy/build-artifacts/root-node_modules-archived",
+      "description": "Archive root node_modules - should be in frontend project only"
+    },
+    {
+      "action": "archive",
+      "source": "bin",
+      "destination": "legacy/build-artifacts/bin-archived",
+      "description": "Archive .NET build outputs - should be regenerated, not in source control"
+    },
+    {
+      "action": "archive", 
+      "source": "obj",
+      "destination": "legacy/build-artifacts/obj-archived",
+      "description": "Archive .NET intermediate files - should be regenerated, not in source control"
+    },
+    {
+      "action": "move",
+      "source": "project-management",
+      "destination": "docs/project-management-consolidated",
+      "description": "Consolidate project-management into docs structure - all docs should be centralized"
+    },
+    {
+      "action": "move",
+      "source": "agents",
+      "destination": "automation",
+      "description": "Rename agents to automation - more descriptive and enterprise-appropriate"
+    },
+    {
+      "action": "update_file",
+      "source": ".gitignore",
+      "replacements": [
+        {
+          "find": "# Build artifacts",
+          "replace": "# Build artifacts\nbin/\nobj/\n**/node_modules/\n*.log\n*.tmp"
+        }
+      ],
+      "description": "Update .gitignore to exclude build artifacts and dependencies"
+    }
+  ],
+  "expected_outcome": {
+    "root_files": 5,
+    "root_directories": 8,
+    "build_artifacts_removed": true,
+    "enterprise_naming": true,
+    "centralized_documentation": true
+  },
+  "enterprise_compliance": {
+    "build_artifacts": "Removed from source control",
+    "dependencies": "Will be co-located with projects",
+    "documentation": "Centralized under docs/",
+    "naming_conventions": "Clear, descriptive directory names",
+    "gitignore_updated": "Prevents future build artifact commits"
+  }
+}

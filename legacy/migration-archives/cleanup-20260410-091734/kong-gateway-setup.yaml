@@ -1,0 +1,501 @@
+# CodeLens Platform - Kong API Gateway Setup
+# Complete configuration for microservices routing and authentication
+
+---
+# Namespace for CodeLens Platform
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: codelens-platform
+  labels:
+    app: codelens
+    version: v2.0.0
+
+---
+# Kong Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: codelens-platform
+data:
+  kong.conf: |
+    # Database configuration
+    database = postgres
+    pg_host = postgres-service
+    pg_port = 5432
+    pg_database = kong
+    pg_user = kong
+    pg_password = kong123
+    
+    # Plugin configuration
+    plugins = bundled,jwt,rate-limiting,cors,prometheus,request-id
+    
+    # Admin API
+    admin_listen = 0.0.0.0:8001
+    admin_access_log = /dev/stdout
+    admin_error_log = /dev/stderr
+    
+    # Proxy configuration
+    proxy_listen = 0.0.0.0:8000, 0.0.0.0:8443 ssl
+    proxy_access_log = /dev/stdout
+    proxy_error_log = /dev/stderr
+    
+    # Security
+    nginx_worker_processes = auto
+    nginx_daemon = off
+    
+    # Logging
+    log_level = info
+
+---
+# PostgreSQL for Kong
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-kong-secret
+  namespace: codelens-platform
+type: Opaque
+stringData:
+  POSTGRES_DB: kong
+  POSTGRES_USER: kong
+  POSTGRES_PASSWORD: kong123
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-kong
+  namespace: codelens-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-kong
+  template:
+    metadata:
+      labels:
+        app: postgres-kong
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgres-kong-secret
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-kong-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-kong-secret
+              key: POSTGRES_PASSWORD
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: codelens-platform
+spec:
+  selector:
+    app: postgres-kong
+  ports:
+  - port: 5432
+    targetPort: 5432
+  type: ClusterIP
+
+---
+# Kong Migration Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kong-migrations
+  namespace: codelens-platform
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: kong-migrations
+        image: kong:3.4
+        command: ["kong", "migrations", "bootstrap"]
+        env:
+        - name: KONG_DATABASE
+          value: "postgres"
+        - name: KONG_PG_HOST
+          value: "postgres-service"
+        - name: KONG_PG_DATABASE
+          value: "kong"
+        - name: KONG_PG_USER
+          value: "kong"
+        - name: KONG_PG_PASSWORD
+          value: "kong123"
+
+---
+# Kong Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong-gateway
+  namespace: codelens-platform
+  labels:
+    app: kong-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kong-gateway
+  template:
+    metadata:
+      labels:
+        app: kong-gateway
+    spec:
+      containers:
+      - name: kong
+        image: kong:3.4
+        env:
+        - name: KONG_DATABASE
+          value: "postgres"
+        - name: KONG_PG_HOST
+          value: "postgres-service"
+        - name: KONG_PG_DATABASE
+          value: "kong"
+        - name: KONG_PG_USER
+          value: "kong"
+        - name: KONG_PG_PASSWORD
+          value: "kong123"
+        - name: KONG_PROXY_ACCESS_LOG
+          value: "/dev/stdout"
+        - name: KONG_ADMIN_ACCESS_LOG
+          value: "/dev/stdout"
+        - name: KONG_PROXY_ERROR_LOG
+          value: "/dev/stderr"
+        - name: KONG_ADMIN_ERROR_LOG
+          value: "/dev/stderr"
+        - name: KONG_ADMIN_LISTEN
+          value: "0.0.0.0:8001"
+        ports:
+        - containerPort: 8000
+          name: proxy
+        - containerPort: 8443
+          name: proxy-ssl
+        - containerPort: 8001
+          name: admin
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+# Kong Gateway Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-gateway-service
+  namespace: codelens-platform
+  labels:
+    app: kong-gateway
+spec:
+  selector:
+    app: kong-gateway
+  type: LoadBalancer
+  ports:
+  - name: proxy
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: proxy-ssl
+    port: 443
+    targetPort: 8443
+    protocol: TCP
+
+---
+# Kong Admin Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin-service
+  namespace: codelens-platform
+  labels:
+    app: kong-gateway
+spec:
+  selector:
+    app: kong-gateway
+  type: ClusterIP
+  ports:
+  - name: admin
+    port: 8001
+    targetPort: 8001
+    protocol: TCP
+
+---
+# CodeLens Service Routes Configuration
+apiVersion: configuration.konghq.com/v1
+kind: KongIngress
+metadata:
+  name: codelens-routes
+  namespace: codelens-platform
+route:
+  preserve_host: true
+  strip_path: false
+
+---
+# Rate Limiting Plugin
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limiting-plugin
+  namespace: codelens-platform
+config:
+  minute: 1000
+  hour: 10000
+  policy: local
+plugin: rate-limiting
+
+---
+# CORS Plugin
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cors-plugin
+  namespace: codelens-platform
+config:
+  origins:
+  - "http://localhost:3000"
+  - "https://*.codelens.platform"
+  methods:
+  - GET
+  - POST
+  - PUT
+  - DELETE
+  - PATCH
+  - OPTIONS
+  headers:
+  - Accept
+  - Accept-Version
+  - Content-Length
+  - Content-MD5
+  - Content-Type
+  - Date
+  - Authorization
+  exposed_headers:
+  - X-Auth-Token
+  credentials: true
+  max_age: 3600
+plugin: cors
+
+---
+# JWT Authentication Plugin
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: jwt-plugin
+  namespace: codelens-platform
+config:
+  uri_param_names:
+  - jwt
+  cookie_names:
+  - jwt
+  header_names:
+  - authorization
+  claims_to_verify:
+  - exp
+plugin: jwt
+
+---
+# Prometheus Plugin for Monitoring
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: prometheus-plugin
+  namespace: codelens-platform
+config:
+  per_consumer: true
+  status_code_metrics: true
+  latency_metrics: true
+  bandwidth_metrics: true
+plugin: prometheus
+
+---
+# Portfolio Service Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portfolio-service-ingress
+  namespace: codelens-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: rate-limiting-plugin,cors-plugin,prometheus-plugin
+spec:
+  rules:
+  - host: api.codelens.platform
+    http:
+      paths:
+      - path: /api/portfolio
+        pathType: Prefix
+        backend:
+          service:
+            name: portfolio-service
+            port:
+              number: 80
+
+---
+# Repository Service Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: repository-service-ingress
+  namespace: codelens-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: rate-limiting-plugin,cors-plugin,prometheus-plugin
+spec:
+  rules:
+  - host: api.codelens.platform
+    http:
+      paths:
+      - path: /api/repository
+        pathType: Prefix
+        backend:
+          service:
+            name: repository-service
+            port:
+              number: 80
+
+---
+# AST Analysis Service Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ast-analysis-service-ingress
+  namespace: codelens-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: rate-limiting-plugin,cors-plugin,prometheus-plugin
+spec:
+  rules:
+  - host: api.codelens.platform
+    http:
+      paths:
+      - path: /api/ast-analysis
+        pathType: Prefix
+        backend:
+          service:
+            name: ast-analysis-service
+            port:
+              number: 80
+
+---
+# Authentication Service Route (No JWT plugin for auth endpoints)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auth-service-ingress
+  namespace: codelens-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: rate-limiting-plugin,cors-plugin,prometheus-plugin
+spec:
+  rules:
+  - host: api.codelens.platform
+    http:
+      paths:
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 80
+
+---
+# Search Service Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: search-service-ingress
+  namespace: codelens-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: rate-limiting-plugin,cors-plugin,jwt-plugin,prometheus-plugin
+spec:
+  rules:
+  - host: api.codelens.platform
+    http:
+      paths:
+      - path: /api/search
+        pathType: Prefix
+        backend:
+          service:
+            name: search-service
+            port:
+              number: 80
+
+---
+# Analytics Service Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: analytics-service-ingress
+  namespace: codelens-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: rate-limiting-plugin,cors-plugin,jwt-plugin,prometheus-plugin
+spec:
+  rules:
+  - host: api.codelens.platform
+    http:
+      paths:
+      - path: /api/analytics
+        pathType: Prefix
+        backend:
+          service:
+            name: analytics-service
+            port:
+              number: 80
+
+---
+# File Service Route
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: file-service-ingress
+  namespace: codelens-platform
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: rate-limiting-plugin,cors-plugin,jwt-plugin,prometheus-plugin
+spec:
+  rules:
+  - host: api.codelens.platform
+    http:
+      paths:
+      - path: /api/files
+        pathType: Prefix
+        backend:
+          service:
+            name: file-service
+            port:
+              number: 80
